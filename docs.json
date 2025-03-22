@@ -17,6 +17,8 @@
             "group": "Get Started",
             "pages": [
               "introduction",
+              "howitworks",
+              "dataavailable",
               "quickstart",
               "development"
             ]
