@@ -1,28 +1,31 @@
 ---
 title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+description: 'Integrate with Pond3r API to power your applications with blockchain data'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Welcome to Pond3r API
 
-## Welcome
-
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+Pond3r API allows you to integrate AI-powered blockchain data querying capabilities directly into your applications. With our API, you can enable natural language interactions with blockchain data without requiring your users to have specialized knowledge of subgraphs, GraphQL, or protocol implementations.
 
 <Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
+  title="Pond3r API Endpoints"
+  icon="database"
+  href="/api-reference/endpoint/messages"
 >
-  View the OpenAPI specification file
+  View available API endpoints
 </Card>
+
+## Key Features
+
+- **Natural Language Understanding**: Send plain English queries about blockchain data
+- **Cross-Protocol Data Access**: Get data from multiple chains and protocols with a single request
+- **Real-Time Price Information**: Access accurate price data from Pyth Network 
+- **Social Data Integration**: Retrieve insights from web3 social platforms like Farcaster
+- **Computed Data Sets**: Leverage pre-processed data for complex analyses
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API endpoints are authenticated using Bearer tokens. You'll need to include your API key in the Authorization header of your requests.
 
 ```json
 "security": [
