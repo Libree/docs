@@ -1,0 +1,47 @@
+---
+title: 'Prices'
+description: 'All the prices that Pond3r uses'
+---
+
+## Price Data Integration
+
+Pond3r leverages the Pyth Network as its primary price oracle to provide accurate, real-time asset pricing data. This integration ensures reliable and up-to-date price information for all supported assets.
+
+### How It Works
+
+1. **Price Fetching**: Pond3r connects to Pyth Network's price feeds to obtain real-time price data
+2. **Update Frequency**: Prices are updated on-chain approximately every 400ms
+3. **Price Confidence**: Each price feed includes confidence intervals to ensure accuracy
+4. **Cross-Chain Support**: Prices are available across multiple blockchain networks
+
+### Supported Asset Types
+
+Pyth Network provides price feeds for various asset classes:
+
+- **Crypto Assets**: Major cryptocurrencies and tokens
+- **Equities**: Stocks and ETFs
+- **FX Pairs**: Major currency pairs
+- **Metals**: Precious metals like gold and silver
+- **Commodities**: Various commodity prices
+
+### Accessing Price Data
+
+You can query price information through natural language requests like:
+- "What's the current price of ETH?"
+- "Compare USDC and USDT prices"
+
+### Price Feed Directory
+
+All available price feeds can be found in the [Pyth Network Price Feeds Documentation](https://docs.pyth.network/price-feeds/price-feeds/asset-classes).
+
+<Note>
+Price accuracy and availability may vary depending on market conditions and network status. Pond3r always uses the most recent confirmed price data from Pyth Network.
+</Note>
+
+### Benefits of Using Pyth Network
+
+- **High Accuracy**: Aggregated prices from multiple high-quality data providers
+- **Low Latency**: Fast price updates for real-time data needs
+- **Robust Security**: Decentralized oracle network with multiple validators
+- **Wide Coverage**: Extensive range of supported assets and markets
+
