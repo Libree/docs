@@ -18,11 +18,10 @@
             "pages": [
               "introduction",
               "howitworks",
-                        {
-            "group": "Data available",
-            "icon": "pen-paintbrush",
-            "pages": ["onchain", "prices", "social", "computed"]
-          }
+              {
+                "group": "Data available",
+                "pages": ["onchain", "prices", "social", "computed"]
+              },
               "quickstart"
             ]
           }
