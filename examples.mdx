@@ -3,29 +3,157 @@ title: 'On-chain data'
 description: 'All the on-chain data that Pond3r uses'
 ---
 
-## Onchain data
+## Query Examples
 
-Pond3r leverages The Graph to fetch onchain data. Thanks to that Pond3r can access data from all the chains The Graph is deployed on and all the protocols supported by The Graph.
+This guide provides examples of effective queries to help you get the most out of POND3R. Well-crafted queries yield more accurate and useful responses. Below are examples organized by data category.
 
-This is a list of the chains and protocols that Pond3r is currently indexing:
+### Price Data Queries
 
-| Protocol | Chain | Version |
-|:---------|:-------|:-------:|
-| Aave | Base | 3 |
-| Uniswap | Base | 3 |
-| Compound | Base | 3 |
-| ERC20 | Base | 1 |
-| Aerodrome | Base | 1 |
-| Uniswap | Optimism | 3 |
-| Oceanpoint | Mainnet | 1 |
-| Livepeer | Arbitrum-One | 1 |
-| Uniswap | Arbitrum-One | 3 |
-| Uniswap | Matic | 3 |
-| Quickswap | Matic | 3 |
-| Aave | Mainnet | 2 |
-| Lido | Mainnet | 1 |
-| Compound | Mainnet | 2 |
-| Silo Finance | Arbitrum-One | 1 |
-| ENS | Mainnet | 1 |
-| Blocksquare | Mainnet | 1 |
-| Compound | Mainnet | 3 |
+<AccordionGroup>
+  <Accordion title="Basic Price Queries">
+    ```
+    What is the current price of ETH?
+    
+    What's the price of LINK in USD?
+    
+    Show me the prices of BTC, ETH, and SOL
+    ```
+    
+    These straightforward queries return the latest price information for specific tokens. You can request multiple token prices in a single query.
+  </Accordion>
+  
+
+### DEX & Liquidity Pool Queries
+
+<AccordionGroup>
+  <Accordion title="Pool Performance">
+    ```
+    What are the top 10 Uniswap v3 pools on Base by volume?
+    
+    Which Aerodrome pools have the highest TVL?
+    
+    ```
+    
+    These queries analyze performance metrics for liquidity pools across different decentralized exchanges.
+  </Accordion>
+  
+  <Accordion title="Trade Volume Analysis">
+    ```
+    Show me the daily trading volume for USDC-ETH on Uniswap v3
+    
+    How has the volume for Arbitrum DEXs changed in the last week?
+    
+    Compare trading volumes between Uniswap and Sushiswap
+    ```
+    
+    These queries examine trading activity and volumes across different time periods and exchanges.
+  </Accordion>
+  
+  <Accordion title="Liquidity Analysis">
+    ```
+    How much liquidity is in the DAI-USDC pool on Curve?
+    
+    Show me the largest liquidity withdrawals on Uniswap v3 today
+    
+    Which pools gained the most liquidity this week?
+    ```
+    
+    These queries focus on changes in liquidity positions and movements.
+  </Accordion>
+</AccordionGroup>
+
+### Lending Protocol Queries
+
+<AccordionGroup>
+  <Accordion title="Interest Rate Queries">
+    ```
+    What's the current supply APY for USDC on Aave v3?
+    
+    Which asset has the highest borrow rate on Compound?
+    
+    Compare lending rates between Aave and Compound for ETH
+    ```
+    
+    These queries retrieve interest rate information from lending protocols.
+  </Accordion>
+  
+  <Accordion title="Protocol Health Queries">
+    ```
+    What's the total value locked in Aave v3?
+    
+    Show me the utilization rate for USDC on Compound
+    
+    Which assets have the highest risk of liquidation on Aave right now?
+    ```
+    
+    These queries analyze the health and status of lending protocols.
+  </Accordion>
+</AccordionGroup>
+
+### Farcaster Social Queries
+
+<AccordionGroup>
+  <Accordion title="Trending Topics">
+    ```
+    What are the trending topics on Farcaster today?
+    
+    What are the trending tokens on Farcaster?
+  
+    ```
+    
+    These queries analyze trending conversations and topics on Farcaster.
+  </Accordion>
+</AccordionGroup>
+
+### ENS Queries
+
+<AccordionGroup>
+  <Accordion title="Domain Registration">
+    ```
+    What's the latest ENS domain registered?
+    
+    How many ENS domains were registered in the last 24 hours?
+    
+    Who owns the ENS domain 'vitalik.eth'?
+    ```
+    
+    These queries retrieve information about ENS domain registrations and ownership.
+  </Accordion>
+  
+  <Accordion title="ENS Trends">
+    ```
+    What are the most popular ENS name lengths?
+    
+    Show me the ENS registration trend over the past month
+    
+    Are 3-letter ENS domains still being registered?
+    ```
+    
+    These queries analyze trends and patterns in ENS domain registrations.
+  </Accordion>
+</AccordionGroup>
+
+
+## Query Writing Tips
+
+To get the best results from POND3R, follow these query writing tips:
+
+1. **Be specific about timeframes**: Instead of "recently," specify "in the last 24 hours" or "this week"
+
+2. **Specify chains and versions**: Mention which blockchain and protocol version you're interested in 
+
+3. **One question at a time**: For complex analyses, start with basic questions and build up with follow-ups
+
+4. **Use natural language**: Write as you would ask a person, not like a SQL query
+
+5. **Specify metrics**: Clearly state which metrics you're interested in (volume, TVL, price, etc.)
+
+6. **Provide context**: For follow-up questions, POND3R maintains conversation context, but being explicit helps
+
+<Note>
+POND3R is constantly learning and improving. If you don't get the exact answer you need, try rephrasing your question or being more specific.
+</Note>
+
+## Can't find what you need?
+
+If you have a specific query type not covered here, please [join our Discord](https://discord.gg/yK9eg5Sr7e) to request examples and guidance. 
