@@ -7,7 +7,6 @@ description: 'Start using POND3R in under 5 minutes'
 
 This guide will help you quickly get started with POND3R's web app and API to access Web3 data through natural language.
 
-
 ### Using the Web3 Data Chat
 
 The Web3 Data Chat is the easiest way to start exploring blockchain data without any technical setup.
@@ -43,6 +42,13 @@ The Web3 Data Chat is the easiest way to start exploring blockchain data without
 For developers looking to integrate POND3R's capabilities into their applications:
 
 <Steps>
+  <Step title="Get your API key">
+    Navigate to "Settings" > "API Keys" in your POND3R dashboard and click "Generate New Key". Give your key a name (e.g., "Development Key") and click "Create".
+    
+    <Warning>
+      Keep your API key secure and never expose it in client-side code. We recommend using environment variables to store your key.
+    </Warning>
+  </Step>
   <Step title="Make your first API request">
     Use the following code example to make a basic request to the POND3R API:
 
@@ -149,4 +155,4 @@ Now that you've made your first queries with POND3R, you can:
   <Card title="Read API Documentation" icon="code" href="/api-reference/introduction">
     Get detailed information about API endpoints and parameters
   </Card>
-</CardGroup>
+</CardGroup> 
