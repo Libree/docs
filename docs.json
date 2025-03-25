@@ -22,7 +22,12 @@
               {
                 "group": "Data available",
                 "pages": ["onchain", "prices", "social", "computed"]
-              },
+              }
+            ]
+          },
+          {
+            "group": "Usage Examples",
+            "pages": [
               "query-examples"
             ]
           }
