@@ -9,13 +9,36 @@ Pond3r uses a combination of on-chain data, social data, and price data to compu
 
 ### How It Works
 
+Our computed data pipeline works by:
+
+1. **Collecting raw data**: We aggregate data from multiple sources including on-chain transactions, price feeds, and social platforms
+2. **Processing and transforming**: Raw data is cleaned, normalized, and structured for efficient querying
+3. **Calculating metrics**: We compute complex metrics like APYs, correlations, and trends that would be inefficient to calculate in real-time
+4. **Storing in optimized format**: Processed data is stored in a format optimized for quick retrieval based on natural language queries
+5. **Regular updates**: Computed datasets are updated at regular intervals to ensure data freshness
 
 ### Supported Computed Data
 
+Pond3r provides the following computed datasets:
 
-### Accessing Computed Data
+| Dataset | Description | Update Frequency |
+|:--------|:------------|:-----------------|
+| Apys  | Apys for most of the yield protocols | Daily |
+| Social Sentiment | Aggregated sentiment analysis from Farcaster and other social platforms | Daily |
+| Most trade tokens on Farcaster | Most traded tokens on Farcaster | Daily |
 
+
+Our AI will automatically determine when to use computed data versus fetching real-time data directly from on-chain sources.
 
 ### Benefits of Using Computed Data
 
+- **Faster Response Times**: Pre-computed metrics avoid complex calculations during query time
+- **Historical Trend Analysis**: Access patterns and changes over time that wouldn't be visible from current state alone
+- **Cross-Protocol Insights**: Compare metrics across different protocols and chains standardized to the same methodology
+- **Complex Calculations**: Access metrics that require significant computation (e.g., correlation analysis, risk metrics)
+- **Reduced On-Chain Load**: Minimize the need for extensive on-chain queries for commonly requested data
+
+<Note>
+If you need a specific computed dataset that isn't currently available, please let us know through our Discord community. We regularly expand our computed data offerings based on user requests.
+</Note>
 

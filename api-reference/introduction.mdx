@@ -25,12 +25,12 @@ Pond3r API allows you to integrate AI-powered blockchain data querying capabilit
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens. You'll need to include your API key in the Authorization header of your requests.
+All API endpoints are authenticated using API keys. You'll need to include your API key in the `x-api-key` header of your requests.
 
 ```json
 "security": [
   {
-    "bearerAuth": []
+    "apiKeyAuth": []
   }
 ]
 ```

@@ -19,12 +19,11 @@
               "introduction",
               "howitworks",
               "getting-started",
-              "query-examples",
               {
                 "group": "Data available",
                 "pages": ["onchain", "prices", "social", "computed"]
               },
-              "quickstart"
+              "query-examples"
             ]
           }
         ]
