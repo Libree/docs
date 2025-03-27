@@ -92,7 +92,7 @@ async function getAaveLiquidations(): Promise<Liquidation[]> {
     );
 
     // Validate and parse the response
-    const cleanResponse = response.data.replace("```json", "").replace("```", "");
+    const cleanResponse = response.data.result.replace("```json", "").replace("```", "");
 
     console.log(cleanResponse);
     const validatedData = LiquidationsResponse.parse(JSON.parse(cleanResponse));
@@ -170,7 +170,7 @@ def get_aave_liquidations() -> List[LiquidationEvent]:
     )
     response.raise_for_status()
 
-    clean_response =  response.text.replace("```json", "").replace("```", "")
+    clean_response =  response.json()["result"].replace("```json", "").replace("```", "")
 
     print(clean_response)
     

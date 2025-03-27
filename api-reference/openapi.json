@@ -47,7 +47,6 @@
                 },
                 "example": {
                   "result": "The current price of ETH is $2088.21 as of March 24, 2025.\n",
-                  "threadId": "33d2a1d4-577a-4ce8-bca7-7af564761ed8",
                   "status": "success"
                 }
               }
@@ -81,15 +80,11 @@
     "schemas": {
       "PriceResponse": {
         "type": "object",
-        "required": ["result", "threadId", "status"],
+        "required": ["result", "status"],
         "properties": {
           "result": {
             "type": "string",
             "description": "Human-readable response containing price information"
-          },
-          "threadId": {
-            "type": "string",
-            "description": "Unique identifier for the conversation thread"
           },
           "status": {
             "type": "string",
