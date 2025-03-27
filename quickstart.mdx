@@ -104,34 +104,12 @@ For developers looking to integrate POND3R's capabilities into their application
     ```json
     {
       "result": "The current price of ETH is $2088.21 as of March 24, 2024.",
-      "threadId": "33d2a1d4-577a-4ce8-bca7-7af564761ed8",
       "status": "success"
     }
     ```
 
     - `result`: Contains the natural language response to your query
-    - `threadId`: A unique identifier for continuing the conversation
     - `status`: Indicates whether the request was successful
-  </Step>
-  <Step title="Continue the conversation">
-    To ask follow-up questions that maintain context, include the `threadId` in subsequent requests:
-
-    <CodeGroup>
-      <CodeBlock title="Node.js" language="javascript">
-      ```javascript
-      // Follow-up question with threadId
-      const followUpResponse = await axios.post('https://api.pond3r.xyz/v1/messages', {
-        prompt: 'How has it changed in the last week?',
-        threadId: '33d2a1d4-577a-4ce8-bca7-7af564761ed8'  // Use the threadId from the previous response
-      }, {
-        headers: {
-          'x-api-key': 'YOUR_API_KEY',
-          'Content-Type': 'application/json'
-        }
-      });
-      ```
-      </CodeBlock>
-    </CodeGroup>
   </Step>
 </Steps>
 
