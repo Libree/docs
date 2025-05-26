@@ -49,15 +49,15 @@ For developers looking to integrate POND3R's capabilities into their application
       Keep your API key secure and never expose it in client-side code. We recommend using environment variables to store your key.
     </Warning>
   </Step>
-  <Step title="Make your first API request">
-    Use the following code example to make a basic request to the POND3R API:
+  <Step title="Submit your first query">
+    Use the following code example to submit a query to the POND3R API:
 
     <CodeGroup>
       <CodeBlock title="Node.js" language="javascript">
       ```javascript
       const axios = require('axios');
 
-      async function queryPond3r() {
+      async function submitQuery() {
         try {
           const response = await axios.post('https://api.pond3r.xyz/v1/messages', {
             prompt: 'Get the current price of ETH'
@@ -68,20 +68,19 @@ For developers looking to integrate POND3R's capabilities into their application
             }
           });
           
-          console.log(response.data);
+          return response.data.processingId;
         } catch (error) {
-          console.error('Error querying POND3R:', error.response ? error.response.data : error.message);
+          console.error('Error submitting query:', error.response ? error.response.data : error.message);
+          throw error;
         }
       }
-
-      queryPond3r();
       ```
       </CodeBlock>
       <CodeBlock title="Python" language="python">
       ```python
       import requests
 
-      def query_pond3r():
+      def submit_query():
           url = 'https://api.pond3r.xyz/v1/messages'
           headers = {
               'x-api-key': 'YOUR_API_KEY',
@@ -94,28 +93,111 @@ For developers looking to integrate POND3R's capabilities into their application
           try:
               response = requests.post(url, json=data, headers=headers)
               response.raise_for_status()
-              print(response.json())
+              return response.json()['processingId']
           except requests.exceptions.RequestException as e:
-              print(f"Error querying POND3R: {e}")
-              
-      if __name__ == "__main__":
-          query_pond3r()
+              print(f"Error submitting query: {e}")
+              raise
       ```
       </CodeBlock>
     </CodeGroup>
   </Step>
-  <Step title="Parse the response">
-    The API returns JSON responses in this format:
+  <Step title="Check the processing status">
+    After submitting your query, you'll receive a `processingId`. Use this ID to check the status of your request:
+
+    <CodeGroup>
+      <CodeBlock title="Node.js" language="javascript">
+      ```javascript
+      async function getResult(processingId) {
+        try {
+          const response = await axios.get(`https://api.pond3r.xyz/v1/messages/${processingId}/status`, {
+            headers: {
+              'x-api-key': 'YOUR_API_KEY'
+            }
+          });
+          
+          return response.data;
+        } catch (error) {
+          console.error('Error checking status:', error.response ? error.response.data : error.message);
+          throw error;
+        }
+      }
+
+      // Example of waiting for the result
+      async function waitForResult(processingId, maxAttempts = 30, interval = 2000) {
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+          const status = await getResult(processingId);
+          
+          if (status.status === 'FINISHED') {
+            return status.result;
+          } else if (status.status === 'ERROR') {
+            throw new Error(status.errorMessage || 'Processing failed');
+          }
+          
+          // Wait before next attempt
+          await new Promise(resolve => setTimeout(resolve, interval));
+        }
+        
+        throw new Error('Timeout waiting for result');
+      }
+      ```
+      </CodeBlock>
+      <CodeBlock title="Python" language="python">
+      ```python
+      import time
+
+      def get_result(processing_id):
+          url = f'https://api.pond3r.xyz/v1/messages/{processing_id}/status'
+          headers = {
+              'x-api-key': 'YOUR_API_KEY'
+          }
+          
+          try:
+              response = requests.get(url, headers=headers)
+              response.raise_for_status()
+              return response.json()
+          except requests.exceptions.RequestException as e:
+              print(f"Error checking status: {e}")
+              raise
+
+      def wait_for_result(processing_id, max_attempts=30, interval=2):
+          for attempt in range(max_attempts):
+              status = get_result(processing_id)
+              
+              if status['status'] == 'FINISHED':
+                  return status['result']
+              elif status['status'] == 'ERROR':
+                  raise Exception(status.get('errorMessage', 'Processing failed'))
+              
+              # Wait before next attempt
+              time.sleep(interval)
+          
+          raise Exception('Timeout waiting for result')
+      ```
+      </CodeBlock>
+    </CodeGroup>
+  </Step>
+  <Step title="Handle the response">
+    The API returns responses in this format:
 
     ```json
     {
-      "result": "The current price of ETH is $2088.21 as of March 24, 2024.",
-      "status": "success"
+      "status": "FINISHED",
+      "result": {
+        "result": "The current price of ETH is $2088.21 as of March 24, 2024.",
+        "status": "success"
+      }
     }
     ```
 
-    - `result`: Contains the natural language response to your query
-    - `status`: Indicates whether the request was successful
+    The status endpoint can return the following statuses:
+    - `PENDING`: The message has been received and is waiting to be processed
+    - `PROCESSING`: The message is currently being processed
+    - `FINISHED`: Processing is complete and the result is available
+    - `ERROR`: An error occurred during processing
+
+    <Warning>
+      Always implement proper error handling and retry logic. We recommend using a polling interval of 2-3 seconds between status checks.
+    </Warning>
   </Step>
 </Steps>
 
