@@ -158,6 +158,125 @@
           }
         }
       }
+    },
+    "/v1/protocols/data-available": {
+      "get": {
+        "description": "Get a list of all available protocols, chains, and data sources that can be queried",
+        "responses": {
+          "200": {
+            "description": "List of available data sources",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["protocols", "farcaster", "marketData", "wallet", "ens"],
+                  "properties": {
+                    "protocols": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["name", "version", "chain_id"],
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "Name of the protocol"
+                          },
+                          "version": {
+                            "type": "string",
+                            "description": "Version of the protocol"
+                          },
+                          "chain_id": {
+                            "type": "string",
+                            "description": "Blockchain network identifier"
+                          }
+                        }
+                      }
+                    },
+                    "farcaster": {
+                      "type": "object",
+                      "properties": {
+                        "trendingTopics": {
+                          "type": "string",
+                          "description": "Provides access to Farcaster trending topics"
+                        },
+                        "trendingTokens": {
+                          "type": "string",
+                          "description": "Provides access to Farcaster trending tokens"
+                        },
+                        "userCasts": {
+                          "type": "string",
+                          "description": "Retrieves casts by a specific Farcaster user"
+                        },
+                        "searchCasts": {
+                          "type": "string",
+                          "description": "Enables searching Farcaster casts by keywords"
+                        },
+                        "searchUsers": {
+                          "type": "string",
+                          "description": "Enables searching Farcaster users by keywords"
+                        },
+                        "tokenMentions": {
+                          "type": "string",
+                          "description": "Tracks token mentions specifically on Farcaster"
+                        }
+                      }
+                    },
+                    "marketData": {
+                      "type": "object",
+                      "properties": {
+                        "tokenInfo": {
+                          "type": "string",
+                          "description": "Provides general information for a token, including description, market cap, and volume"
+                        },
+                        "tokenPrices": {
+                          "type": "string",
+                          "description": "Provides current and historical price data for tokens"
+                        },
+                        "topGainersLosers": {
+                          "type": "string",
+                          "description": "Lists top cryptocurrency gainers and losers"
+                        },
+                        "recentlyAddedCoins": {
+                          "type": "string",
+                          "description": "Lists recently added cryptocurrencies on market trackers"
+                        }
+                      }
+                    },
+                    "wallet": {
+                      "type": "object",
+                      "properties": {
+                        "tokenBalances": {
+                          "type": "string",
+                          "description": "Retrieves token balances for a given wallet address or ENS name"
+                        }
+                      }
+                    },
+                    "ens": {
+                      "type": "object",
+                      "properties": {
+                        "ownerLookup": {
+                          "type": "string",
+                          "description": "Looks up the owner of an Ethereum Name Service (ENS) name"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

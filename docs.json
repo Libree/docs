@@ -45,7 +45,8 @@
           {
             "group": "Endpoint Examples",
             "pages": [
-              "api-reference/endpoint/messages"
+              "api-reference/endpoint/messages",
+              "api-reference/endpoint/data-available"
             ]
           }
         ]
