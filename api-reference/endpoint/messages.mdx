@@ -2,3 +2,193 @@
 title: 'Send a Prompt'
 openapi: 'POST /v1/messages'
 ---
+
+## Overview
+
+The messages endpoint allows you to submit natural language queries about blockchain data. The API now processes messages asynchronously, providing a more robust way to handle longer-running queries.
+
+## Request Flow
+
+1. Submit your query using the `/v1/messages` endpoint
+2. Receive a `processingId` to track your request
+3. Poll the `/v1/messages/{processingId}/status` endpoint to get the final result
+
+## Examples
+
+### Submitting a Query
+
+<CodeGroup>
+  <CodeBlock title="Node.js" language="javascript">
+  ```javascript
+  const axios = require('axios');
+
+  async function submitQuery() {
+    try {
+      const response = await axios.post('https://api.pond3r.xyz/v1/messages', {
+        prompt: 'Get the current price of ETH'
+      }, {
+        headers: {
+          'x-api-key': 'YOUR_API_KEY',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      return response.data.processingId;
+    } catch (error) {
+      console.error('Error submitting query:', error.response ? error.response.data : error.message);
+      throw error;
+    }
+  }
+  ```
+  </CodeBlock>
+  <CodeBlock title="Python" language="python">
+  ```python
+  import requests
+
+  def submit_query():
+      url = 'https://api.pond3r.xyz/v1/messages'
+      headers = {
+          'x-api-key': 'YOUR_API_KEY',
+          'Content-Type': 'application/json'
+      }
+      data = {
+          'prompt': 'Get the current price of ETH'
+      }
+      
+      try:
+          response = requests.post(url, json=data, headers=headers)
+          response.raise_for_status()
+          return response.json()['processingId']
+      except requests.exceptions.RequestException as e:
+          print(f"Error submitting query: {e}")
+          raise
+  ```
+  </CodeBlock>
+</CodeGroup>
+
+### Checking Status and Getting Results
+
+<CodeGroup>
+  <CodeBlock title="Node.js" language="javascript">
+  ```javascript
+  const axios = require('axios');
+
+  async function getResult(processingId) {
+    try {
+      const response = await axios.get(`https://api.pond3r.xyz/v1/messages/${processingId}/status`, {
+        headers: {
+          'x-api-key': 'YOUR_API_KEY'
+        }
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error checking status:', error.response ? error.response.data : error.message);
+      throw error;
+    }
+  }
+
+  // Example of waiting for the result
+  async function waitForResult(processingId, maxAttempts = 30, interval = 2000) {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const status = await getResult(processingId);
+      
+      if (status.status === 'FINISHED') {
+        return status.result;
+      } else if (status.status === 'ERROR') {
+        throw new Error(status.errorMessage || 'Processing failed');
+      }
+      
+      // Wait before next attempt
+      await new Promise(resolve => setTimeout(resolve, interval));
+    }
+    
+    throw new Error('Timeout waiting for result');
+  }
+
+  // Usage example
+  async function main() {
+    try {
+      const processingId = await submitQuery();
+      console.log('Processing ID:', processingId);
+      
+      const result = await waitForResult(processingId);
+      console.log('Final result:', result);
+    } catch (error) {
+      console.error('Error:', error.message);
+    }
+  }
+  ```
+  </CodeBlock>
+  <CodeBlock title="Python" language="python">
+  ```python
+  import requests
+  import time
+
+  def get_result(processing_id):
+      url = f'https://api.pond3r.xyz/v1/messages/{processing_id}/status'
+      headers = {
+          'x-api-key': 'YOUR_API_KEY'
+      }
+      
+      try:
+          response = requests.get(url, headers=headers)
+          response.raise_for_status()
+          return response.json()
+      except requests.exceptions.RequestException as e:
+          print(f"Error checking status: {e}")
+          raise
+
+  def wait_for_result(processing_id, max_attempts=30, interval=2):
+      for attempt in range(max_attempts):
+          status = get_result(processing_id)
+          
+          if status['status'] == 'FINISHED':
+              return status['result']
+          elif status['status'] == 'ERROR':
+              raise Exception(status.get('errorMessage', 'Processing failed'))
+          
+          # Wait before next attempt
+          time.sleep(interval)
+      
+      raise Exception('Timeout waiting for result')
+
+  # Usage example
+  def main():
+      try:
+          processing_id = submit_query()
+          print('Processing ID:', processing_id)
+          
+          result = wait_for_result(processing_id)
+          print('Final result:', result)
+      except Exception as e:
+          print('Error:', str(e))
+  ```
+  </CodeBlock>
+</CodeGroup>
+
+## Response Statuses
+
+The status endpoint can return the following statuses:
+
+- `PENDING`: The message has been received and is waiting to be processed
+- `PROCESSING`: The message is currently being processed
+- `FINISHED`: Processing is complete and the result is available
+- `ERROR`: An error occurred during processing
+
+## Error Handling
+
+When an error occurs, the status response will include an `errorMessage` field with details about what went wrong. Common error scenarios include:
+
+- Invalid API key
+- Malformed query
+- Processing timeout
+- Internal server errors
+
+## Best Practices
+
+1. Always implement proper error handling and retry logic
+2. Use appropriate polling intervals (2-3 seconds recommended)
+3. Set reasonable timeouts for your application
+4. Store the `processingId` for later reference if needed
+5. Consider implementing a webhook system for production applications

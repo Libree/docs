@@ -18,7 +18,7 @@
   "paths": {
     "/v1/messages": {
       "post": {
-        "description": "Send a natural language query to retrieve cryptocurrency price information",
+        "description": "Submit a natural language query for processing",
         "requestBody": {
           "required": true,
           "content": {
@@ -39,15 +39,24 @@
         },
         "responses": {
           "201": {
-            "description": "Price information response",
+            "description": "Message submitted for processing",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PriceResponse"
-                },
-                "example": {
-                  "result": "The current price of ETH is $2088.21 as of March 24, 2025.\n",
-                  "status": "success"
+                  "type": "object",
+                  "required": ["processingId", "status"],
+                  "properties": {
+                    "processingId": {
+                      "type": "string",
+                      "description": "Unique identifier for tracking the message processing status",
+                      "example": "123e4567-e89b-12d3-a456-426614174000"
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Initial status of the request",
+                      "enum": ["PENDING"]
+                    }
+                  }
                 }
               }
             }
@@ -64,6 +73,81 @@
           },
           "401": {
             "description": "Unauthorized - invalid or missing authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/messages/{processingId}/status": {
+      "get": {
+        "description": "Get the status and result of a processed message",
+        "parameters": [
+          {
+            "name": "processingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The processing ID returned from the message submission"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message processing status and result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status"],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "Current status of the message processing",
+                      "enum": ["PENDING", "PROCESSING", "FINISHED", "ERROR"]
+                    },
+                    "result": {
+                      "type": "object",
+                      "description": "The processed result (only present when status is FINISHED)",
+                      "properties": {
+                        "result": {
+                          "type": "string",
+                          "description": "Human-readable response containing price information"
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "Status of the request",
+                          "enum": ["success", "error", "pending"]
+                        }
+                      }
+                    },
+                    "errorMessage": {
+                      "type": "string",
+                      "description": "Error message if processing failed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Processing ID not found",
             "content": {
               "application/json": {
                 "schema": {
