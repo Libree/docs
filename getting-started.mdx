@@ -1,66 +1,80 @@
 ---
 title: 'Getting Started'
-description: 'Start using POND3R in under 5 minutes'
+description: 'Start creating automated crypto intelligence reports in under 5 minutes'
 ---
 
-## Getting Started with POND3R
+## Getting Started with Pond3r
 
-This guide will help you quickly get started with POND3R's web app and API to access Web3 data through natural language.
+This guide will help you quickly get started with Pond3r's AI-powered analytics platform to create automated crypto intelligence reports.
 
-### Using the Web3 Data Chat
+### Creating Your First Automated Report
 
-The Web3 Data Chat is the easiest way to start exploring blockchain data without any technical setup.
+The easiest way to start is by creating your first automated report through our web interface.
 
 <Steps>
-  <Step title="Navigate to the chat interface">
+  <Step title="Navigate to the report creation interface">
     Go directly to [makeit.pond3r.xyz](https://makeit.pond3r.xyz).
   </Step>
-  <Step title="Ask your first question">
-    Type a natural language question in the chat box, such as:
+  <Step title="Describe what you want to track">
+    Use natural language to describe your analysis needs. Examples:
     ```
-    What are the top 5 Uniswap pools on Base by volume in the last 24 hours?
+    Track AI agent launches on Virtuals Protocol with graduation success rates
     ```
-    or
     ```
-    What's the current price of ETH?
+    Monitor new tokens on Uniswap with less than $500K market cap and rising liquidity
+    ```
+    ```
+    Daily yield farming report across Aave, Compound, and Convex protocols
     ```
   </Step>
-  <Step title="Review the response">
-    POND3R will process your question, find the relevant data sources, and return a human-readable answer with visualizations when applicable.
+  <Step title="AI generates your analysis">
+    Pond3r's AI data scientist will automatically:
+    - Create sophisticated Python analysis scripts
+    - Set up data ingestion from multiple sources
+    - Apply advanced statistical analysis to identify patterns
+    - Configure risk metrics and growth indicators
   </Step>
-  <Step title="Refine your query">
-    You can ask follow-up questions to drill down into the data. For example:
-    ```
-    How has the volume changed compared to last week?
-    ```
-    POND3R maintains context from previous questions to provide more relevant answers.
+  <Step title="Set your delivery schedule">
+    Choose how often you want to receive reports:
+    - Daily updates for fast-moving opportunities
+    - Weekly summaries for trend analysis
+    - Monthly deep dives for strategic insights
+  </Step>
+  <Step title="Receive your first report">
+    Your report will be delivered directly to your email inbox, containing:
+    - Executive summary with key findings
+    - Statistical analysis with trend identification
+    - Risk assessments with mathematical precision
+    - Actionable insights prioritized by opportunity size
   </Step>
 </Steps>
 
-### Connecting to the API
+### Accessing Reports via API
 
-For developers looking to integrate POND3R's capabilities into their applications:
+Perfect for AI agents and automated trading systems to consume structured intelligence reports.
 
 <Steps>
   <Step title="Get your API key">
-    Navigate to "Settings" > "API Keys" in your POND3R dashboard and click "Generate New Key". Give your key a name (e.g., "Development Key") and click "Create".
+    Navigate to "Settings" > "API Keys" in your Pond3r dashboard and click "Generate New Key". Give your key a name (e.g., "Trading Bot API") and click "Create".
     
     <Warning>
       Keep your API key secure and never expose it in client-side code. We recommend using environment variables to store your key.
     </Warning>
   </Step>
-  <Step title="Submit your first query">
-    Use the following code example to submit a query to the POND3R API:
+  <Step title="Create an automated report">
+    Use the API to set up automated reports for your systems:
 
     <CodeGroup>
       <CodeBlock title="Node.js" language="javascript">
       ```javascript
       const axios = require('axios');
 
-      async function submitQuery() {
+      async function createReport() {
         try {
-          const response = await axios.post('https://api.pond3r.xyz/v1/messages', {
-            prompt: 'Get the current price of ETH'
+          const response = await axios.post('https://api.pond3r.xyz/v1/api/reports', {
+            description: 'Track new tokens on Uniswap with less than $500K market cap and rising liquidity',
+            schedule: 'daily',
+            delivery_format: 'structured_markdown'
           }, {
             headers: {
               'x-api-key': 'YOUR_API_KEY',
@@ -68,9 +82,9 @@ For developers looking to integrate POND3R's capabilities into their application
             }
           });
           
-          return response.data.processingId;
+          return response.data.reportId;
         } catch (error) {
-          console.error('Error submitting query:', error.response ? error.response.data : error.message);
+          console.error('Error creating report:', error.response ? error.response.data : error.message);
           throw error;
         }
       }
@@ -80,36 +94,38 @@ For developers looking to integrate POND3R's capabilities into their application
       ```python
       import requests
 
-      def submit_query():
-          url = 'https://api.pond3r.xyz/v1/messages'
+      def create_report():
+          url = 'https://api.pond3r.xyz/v1/api/reports'
           headers = {
               'x-api-key': 'YOUR_API_KEY',
               'Content-Type': 'application/json'
           }
           data = {
-              'prompt': 'Get the current price of ETH'
+              'description': 'Track new tokens on Uniswap with less than $500K market cap and rising liquidity',
+              'schedule': 'daily',
+              'delivery_format': 'structured_markdown'
           }
           
           try:
               response = requests.post(url, json=data, headers=headers)
               response.raise_for_status()
-              return response.json()['processingId']
+              return response.json()['reportId']
           except requests.exceptions.RequestException as e:
-              print(f"Error submitting query: {e}")
+              print(f"Error creating report: {e}")
               raise
       ```
       </CodeBlock>
     </CodeGroup>
   </Step>
-  <Step title="Check the processing status">
-    After submitting your query, you'll receive a `processingId`. Use this ID to check the status of your request:
+  <Step title="Retrieve report data">
+    Access your latest reports in structured format:
 
     <CodeGroup>
       <CodeBlock title="Node.js" language="javascript">
       ```javascript
-      async function getResult(processingId) {
+      async function getLatestReport(reportId) {
         try {
-          const response = await axios.get(`https://api.pond3r.xyz/v1/messages/${processingId}/status`, {
+          const response = await axios.get(`https://api.pond3r.xyz/v1/api/reports/${reportId}/latest`, {
             headers: {
               'x-api-key': 'YOUR_API_KEY'
             }
@@ -117,36 +133,16 @@ For developers looking to integrate POND3R's capabilities into their application
           
           return response.data;
         } catch (error) {
-          console.error('Error checking status:', error.response ? error.response.data : error.message);
+          console.error('Error fetching report:', error.response ? error.response.data : error.message);
           throw error;
         }
-      }
-
-      // Example of waiting for the result
-      async function waitForResult(processingId, maxAttempts = 30, interval = 2000) {
-        for (let attempt = 0; attempt < maxAttempts; attempt++) {
-          const status = await getResult(processingId);
-          
-          if (status.status === 'FINISHED') {
-            return status.result;
-          } else if (status.status === 'ERROR') {
-            throw new Error(status.errorMessage || 'Processing failed');
-          }
-          
-          // Wait before next attempt
-          await new Promise(resolve => setTimeout(resolve, interval));
-        }
-        
-        throw new Error('Timeout waiting for result');
       }
       ```
       </CodeBlock>
       <CodeBlock title="Python" language="python">
       ```python
-      import time
-
-      def get_result(processing_id):
-          url = f'https://api.pond3r.xyz/v1/messages/{processing_id}/status'
+      def get_latest_report(report_id):
+          url = f'https://api.pond3r.xyz/v1/api/reports/{report_id}/latest'
           headers = {
               'x-api-key': 'YOUR_API_KEY'
           }
@@ -156,63 +152,58 @@ For developers looking to integrate POND3R's capabilities into their application
               response.raise_for_status()
               return response.json()
           except requests.exceptions.RequestException as e:
-              print(f"Error checking status: {e}")
+              print(f"Error fetching report: {e}")
               raise
-
-      def wait_for_result(processing_id, max_attempts=30, interval=2):
-          for attempt in range(max_attempts):
-              status = get_result(processing_id)
-              
-              if status['status'] == 'FINISHED':
-                  return status['result']
-              elif status['status'] == 'ERROR':
-                  raise Exception(status.get('errorMessage', 'Processing failed'))
-              
-              # Wait before next attempt
-              time.sleep(interval)
-          
-          raise Exception('Timeout waiting for result')
       ```
       </CodeBlock>
     </CodeGroup>
   </Step>
-  <Step title="Handle the response">
-    The API returns responses in this format:
+  <Step title="Handle structured report data">
+    Reports are returned in structured JSON format with markdown content:
 
     ```json
     {
-      "status": "FINISHED",
-      "result": {
-        "result": "The current price of ETH is $2088.21 as of March 24, 2024.",
-        "status": "success"
-      }
+      "reportId": "report_123456",
+      "title": "New Token Opportunities - Daily Report",
+      "generatedAt": "2024-03-24T09:00:00Z",
+      "executiveSummary": {
+        "keyFindings": "3 new tokens identified with 50%+ liquidity growth",
+        "topOpportunity": "TOKEN_ABC showing 85% volume increase"
+      },
+      "analysis": {
+        "statisticalInsights": "# Statistical Analysis\n\n...",
+        "riskAssessment": "# Risk Assessment\n\n...",
+        "actionableInsights": "# Actionable Insights\n\n..."
+      },
+      "opportunities": [
+        {
+          "token": "TOKEN_ABC",
+          "riskScore": 0.3,
+          "opportunitySize": "High",
+          "details": "Rising liquidity with institutional backing"
+        }
+      ]
     }
     ```
 
-    The status endpoint can return the following statuses:
-    - `PENDING`: The message has been received and is waiting to be processed
-    - `PROCESSING`: The message is currently being processed
-    - `FINISHED`: Processing is complete and the result is available
-    - `ERROR`: An error occurred during processing
-
-    <Warning>
-      Always implement proper error handling and retry logic. We recommend using a polling interval of 2-3 seconds between status checks.
-    </Warning>
+    <Note>
+      All analysis sections use structured markdown format, making them perfect for AI agents to parse and act upon.
+    </Note>
   </Step>
 </Steps>
 
 ### Next steps
 
-Now that you've made your first queries with POND3R, you can:
+Now that you've created your first automated report with Pond3r, you can:
 
 <CardGroup>
-  <Card title="Explore Query Examples" icon="book-open" href="examples">
-    See examples of effective queries for different types of blockchain data
+  <Card title="Explore Report Examples" icon="book-open" href="examples">
+    See examples of effective report descriptions for different analysis types
   </Card>
   <Card title="Browse Available Data" icon="database" href="onchain">
-    Learn what chains, protocols, and data types POND3R can access
+    Learn what chains, protocols, and data types Pond3r can analyze
   </Card>
   <Card title="Read API Documentation" icon="code" href="api-reference/introduction">
-    Get detailed information about API endpoints and parameters
+    Get detailed information about report endpoints and structured data formats
   </Card>
 </CardGroup> 

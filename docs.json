@@ -2,6 +2,9 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "willow",
   "name": "Pond3r docs",
+  "modeToggle": {
+    "default": "dark"
+  },
   "colors": {
     "primary": "#16A34A",
     "light": "#07C983",
@@ -17,18 +20,9 @@
             "group": "Get Started",
             "pages": [
               "introduction",
-              "howitworks",
+              "quickstart",
               "getting-started",
-              {
-                "group": "Data available",
-                "pages": ["onchain", "prices", "social", "computed"]
-              }
-            ]
-          },
-          {
-            "group": "Usage Examples",
-            "pages": [
-              "examples"
+              "features"
             ]
           }
         ]
@@ -45,8 +39,7 @@
           {
             "group": "Endpoint Examples",
             "pages": [
-              "api-reference/endpoint/messages",
-              "api-reference/endpoint/data-available"
+              "api-reference/endpoint/reports"
             ]
           }
         ]

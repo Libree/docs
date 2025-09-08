@@ -1,130 +1,75 @@
 ---
-title: 'Getting Started'
-description: 'Start using POND3R in under 5 minutes'
+title: 'Quickstart'
+description: 'Create your first automated crypto report in under 5 minutes'
 ---
 
-## Getting Started with POND3R
+## Quickstart with Pond3r
 
-This guide will help you quickly get started with POND3R's web app and API to access Web3 data through natural language.
+This guide will help you quickly create your first automated crypto intelligence report with Pond3r's AI-powered analytics platform.
 
 
-### Using the Web3 Data Chat
+### Creating Your First Report
 
-The Web3 Data Chat is the easiest way to start exploring blockchain data without any technical setup.
+The easiest way to start is by creating an automated report through our web interface.
 
 <Steps>
-  <Step title="Navigate to the chat interface">
+  <Step title="Navigate to the report creation interface">
     Go directly to [makeit.pond3r.xyz](https://makeit.pond3r.xyz).
   </Step>
-  <Step title="Ask your first question">
-    Type a natural language question in the chat box, such as:
+  <Step title="Describe what you want to track">
+    Use natural language to describe your analysis needs:
     ```
-    What are the top 5 Uniswap pools on Base by volume in the last 24 hours?
+    Track AI agent launches on Virtuals Protocol with graduation success rates
     ```
     or
     ```
-    What's the current price of ETH?
+    Monitor new tokens on Uniswap with less than $500K market cap and rising liquidity
     ```
   </Step>
-  <Step title="Review the response">
-    POND3R will process your question, find the relevant data sources, and return a human-readable answer with visualizations when applicable.
+  <Step title="AI generates your analysis">
+    Pond3r's AI data scientist will automatically create sophisticated Python analysis scripts and set up data ingestion from multiple sources.
   </Step>
-  <Step title="Refine your query">
-    You can ask follow-up questions to drill down into the data. For example:
-    ```
-    How has the volume changed compared to last week?
-    ```
-    POND3R maintains context from previous questions to provide more relevant answers.
+  <Step title="Receive your first report">
+    Your report will be delivered directly to your email inbox with executive summaries, statistical analysis, risk assessments, and actionable insights.
   </Step>
 </Steps>
 
-### Connecting to the API
+### Quick API Integration
 
-For developers looking to integrate POND3R's capabilities into their applications:
+For developers who want to integrate automated reports into their applications:
 
-<Steps>
-  <Step title="Make your first API request">
-    Use the following code example to make a basic request to the POND3R API:
+```javascript
+// Create an automated report
+const response = await axios.post('https://api.pond3r.xyz/v1/api/reports', {
+  description: 'Track new tokens on Uniswap with rising liquidity',
+  schedule: 'daily',
+  delivery_format: 'structured_markdown'
+}, {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
 
-    <CodeGroup>
-      <CodeBlock title="Node.js" language="javascript">
-      ```javascript
-      const axios = require('axios');
+const reportId = response.data.reportId;
 
-      async function queryPond3r() {
-        try {
-          const response = await axios.post('https://api.pond3r.xyz/v1/messages', {
-            prompt: 'Get the current price of ETH'
-          }, {
-            headers: {
-              'x-api-key': 'YOUR_API_KEY',
-              'Content-Type': 'application/json'
-            }
-          });
-          
-          console.log(response.data);
-        } catch (error) {
-          console.error('Error querying POND3R:', error.response ? error.response.data : error.message);
-        }
-      }
+// Get latest report data
+const report = await axios.get(`https://api.pond3r.xyz/v1/api/reports/${reportId}/latest`, {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
 
-      queryPond3r();
-      ```
-      </CodeBlock>
-      <CodeBlock title="Python" language="python">
-      ```python
-      import requests
-
-      def query_pond3r():
-          url = 'https://api.pond3r.xyz/v1/messages'
-          headers = {
-              'x-api-key': 'YOUR_API_KEY',
-              'Content-Type': 'application/json'
-          }
-          data = {
-              'prompt': 'Get the current price of ETH'
-          }
-          
-          try:
-              response = requests.post(url, json=data, headers=headers)
-              response.raise_for_status()
-              print(response.json())
-          except requests.exceptions.RequestException as e:
-              print(f"Error querying POND3R: {e}")
-              
-      if __name__ == "__main__":
-          query_pond3r()
-      ```
-      </CodeBlock>
-    </CodeGroup>
-  </Step>
-  <Step title="Parse the response">
-    The API returns JSON responses in this format:
-
-    ```json
-    {
-      "result": "The current price of ETH is $2088.21 as of March 24, 2024.",
-      "status": "success"
-    }
-    ```
-
-    - `result`: Contains the natural language response to your query
-    - `status`: Indicates whether the request was successful
-  </Step>
-</Steps>
+console.log(report.data.executiveSummary.keyFindings);
+```
 
 ### Next steps
 
-Now that you've made your first queries with POND3R, you can:
+Now that you've created your first automated report with Pond3r:
 
 <CardGroup>
-  <Card title="Explore Query Examples" icon="book-open" href="examples">
-    See examples of effective queries for different types of blockchain data
+  <Card title="Explore Report Examples" icon="book-open" href="examples">
+    See examples of effective report descriptions for different analysis types
   </Card>
   <Card title="Browse Available Data" icon="database" href="onchain">
-    Learn what chains, protocols, and data types POND3R can access
+    Learn what chains, protocols, and data types Pond3r can analyze
   </Card>
   <Card title="Read API Documentation" icon="code" href="api-reference/introduction">
-    Get detailed information about API endpoints and parameters
+    Get detailed information about report endpoints and structured data formats
   </Card>
 </CardGroup>

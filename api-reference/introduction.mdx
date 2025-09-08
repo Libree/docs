@@ -1,11 +1,11 @@
 ---
 title: 'Introduction'
-description: 'Integrate with Pond3r API to power your applications with blockchain data'
+description: 'Integrate with Pond3r API to power your applications with automated crypto intelligence'
 ---
 
 ## Welcome to Pond3r API
 
-Pond3r API allows you to integrate AI-powered blockchain data querying capabilities directly into your applications. With our API, you can enable natural language interactions with blockchain data without requiring your users to have specialized knowledge of subgraphs, GraphQL, or protocol implementations.
+Pond3r API allows you to integrate AI-powered crypto intelligence and automated reporting capabilities directly into your applications. Perfect for AI agents and automated trading systems, our API provides structured access to comprehensive blockchain analysis, risk assessments, and market intelligence reports.
 
 <Card
   title="Pond3r API Endpoints"
@@ -17,189 +17,38 @@ Pond3r API allows you to integrate AI-powered blockchain data querying capabilit
 
 ## Key Features
 
-- **Natural Language Understanding**: Send plain English queries about blockchain data
-- **Cross-Protocol Data Access**: Get data from multiple chains and protocols with a single request
-- **Real-Time Price Information**: Access accurate price data from Pyth Network 
-- **Social Data Integration**: Retrieve insights from web3 social platforms like Farcaster
-- **Computed Data Sets**: Leverage pre-processed data for complex analyses
+- **Automated Report Generation**: Create sophisticated analysis reports using natural language descriptions
+- **Structured Markdown Output**: Receive reports in structured JSON format with markdown content perfect for AI consumption
+- **Risk Assessment Integration**: Get mathematical risk scoring and statistical analysis with every report
+- **Multi-Protocol Intelligence**: Comprehensive analysis across chains, protocols, and market segments
+- **Real-Time Data Processing**: Access to millions of data points processed daily by our AI data scientist
+- **Scheduled Delivery**: Set up automated report delivery on daily, weekly, or monthly schedules
 
 ## Authentication
 
 All API endpoints are authenticated using API keys. You'll need to include your API key in the `x-api-key` header of your requests.
 
-```json
-"security": [
-  {
-    "apiKeyAuth": []
-  }
-]
-```
-
-## Type-Safe API Integration Examples
-
-Here are examples of how to integrate the Pond3r API using type-safe approaches in TypeScript (with Zod) and Python (with Pydantic).
-
-### TypeScript with Zod 
-
-```typescript
-import { z } from 'zod';
-import axios from 'axios';
-
-// Define the liquidation event schema
-const LiquidationEvent = z.object({
-  liquidatedUser: z.string(),
-  liquidator: z.string(),
-  debtToken: z.object({
-    symbol: z.string(),
-    amount: z.union([z.string(), z.number()]),
-    usdValue: z.union([z.string(), z.number()]).nullable(),
-  }),
-  collateralToken: z.object({
-    symbol: z.string(),
-    amount: z.union([z.string(), z.number()]),
-    usdValue: z.union([z.string(), z.number()]).nullable(),
-  }),
-  timestamp: z.union([z.string(), z.number()]),
-  txHash: z.string(),
-});
-
-const LiquidationsResponse = z.array(LiquidationEvent);
-
-type Liquidation = z.infer<typeof LiquidationEvent>;
-
-async function getAaveLiquidations(): Promise<Liquidation[]> {
-  try {
-    const response = await axios.post(
-      'https://api.pond3r.xyz/v1/messages',
-      {
-        prompt: `Get the last 10 liquidations on Aave V3 on Base. Return as JSON array with each liquidation having:
-        - liquidatedUser (address)
-        - liquidator (address)
-        - debtToken: { symbol, amount, usdValue }
-        - collateralToken: { symbol, amount, usdValue }
-        - timestamp (unix)
-        - txHash
-        
-        Response only the JSON array, nothing else.
-        `
-      },
-      {
-        headers: {
-          'x-api-key': 'pond3r-api-key',
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    // Validate and parse the response
-    const cleanResponse = response.data.result.replace("```json", "").replace("```", "");
-
-    console.log(cleanResponse);
-    const validatedData = LiquidationsResponse.parse(JSON.parse(cleanResponse));
-    return validatedData;
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      console.error('Validation error:', error.errors);
-    }
-    throw error;
-  }
+```javascript
+headers: {
+  'x-api-key': 'YOUR_API_KEY',
+  'Content-Type': 'application/json'
 }
-
-// Example usage
-const main = async () => {
-  const liquidations = await getAaveLiquidations();
-  liquidations.forEach(liquidation => {
-    console.log(`
-      Liquidation:
-      User: ${liquidation.liquidatedUser}
-      Debt Token: ${liquidation.debtToken.amount} ${liquidation.debtToken.symbol} ($${liquidation.debtToken.usdValue})
-      Collateral Token: ${liquidation.collateralToken.amount} ${liquidation.collateralToken.symbol} ($${liquidation.collateralToken.usdValue})
-      Timestamp: ${new Date(Number(liquidation.timestamp) * 1000).toISOString()}
-    `);
-  });
-};
-
-main();
 ```
 
-### Python with Pydantic
+<Warning>
+**🚧 API Documentation Coming Soon**  
+Detailed API integration examples and documentation will be available when the Reports API launches. 
+</Warning>
 
-```python
-from typing import List
-from pydantic import BaseModel
-import requests
-from datetime import datetime
-import json
+## Getting Started
 
+Ready to integrate Pond3r's AI-powered analytics into your applications? Here's what's coming:
 
-class Token(BaseModel):
-    symbol: str
-    amount: str or float
-    usdValue: str or float or None
+- **Automated Report Creation** - Generate custom analysis reports using natural language
+- **Structured Data Access** - Retrieve reports in both markdown and JSON formats  
+- **Real-time Intelligence** - Access the latest market insights and risk assessments
+- **Type-safe Integration** - Full TypeScript and Python SDK support
 
-class LiquidationEvent(BaseModel):
-    liquidatedUser: str
-    liquidator: str
-    debtToken: Token
-    collateralToken: Token
-    timestamp: int or str
-    txHash: str
-
-def get_aave_liquidations() -> List[LiquidationEvent]:
-    request_data = {
-        "prompt": """Get the last 10 liquidations on Aave V3 on Base. Return as JSON array with each liquidation having:
-        - liquidatedUser (address)
-        - liquidator (address)
-        - debtToken: { symbol, amount, usdValue }
-        - collateralToken: { symbol, amount, usdValue }
-        - timestamp (unix)
-        - txHash
-        
-        Response only the JSON array, nothing else.
-        """
-    }
-
-    response = requests.post(
-        "https://api.pond3r.xyz/v1/messages",
-        json=request_data,
-        headers={
-            "x-api-key": "pond3r-api-key",
-            "Content-Type": "application/json"
-        },
-        timeout=60
-    )
-    response.raise_for_status()
-
-    clean_response =  response.json()["result"].replace("```json", "").replace("```", "")
-
-    print(clean_response)
-    
-    return [LiquidationEvent.model_validate(item) for item in json.loads(clean_response)]
-
-def main():
-    try:
-        liquidations = get_aave_liquidations()
-        for liquidation in liquidations:
-            print(f"""
-                    Liquidation:
-                    User: {liquidation.liquidatedUser}
-                    Debt Token: {liquidation.debtToken.amount} {liquidation.debtToken.symbol} (${float(liquidation.debtToken.usdValue):.2f})
-                    Collateral Token: {liquidation.collateralToken.amount} {liquidation.collateralToken.symbol} (${float(liquidation.collateralToken.usdValue):.2f})
-                    Timestamp: {datetime.fromtimestamp(liquidation.timestamp).isoformat()}
-                    Transaction: {liquidation.txHash}
-            """)
-            
-    except Exception as e:
-        print(f"Error: {str(e)}")
-
-if __name__ == "__main__":
-    main()
-```
-
-These examples demonstrate how to:
-- Define structured schemas for Aave V3 liquidation events
-- Handle complex nested data structures
-- Format and display the results in a readable way
-- Maintain type safety throughout the application
-
-You can adapt these schemas based on the specific data you're querying from the API. The examples show a simple token price query, but the same pattern works for any structured data returned by the API.
+<Note>
+Want early access to the API? Join our [Discord community](https://discord.gg/yK9eg5Sr7e) or follow us on [Twitter](https://twitter.com/pond3r) to get notified when it's available.
+</Note>

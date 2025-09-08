@@ -1,0 +1,234 @@
+---
+title: 'Reports API'
+description: 'Manage and access automated crypto intelligence reports'
+---
+
+<Warning>
+**🚧 Coming Soon**  
+The Reports API is currently in development and will be available soon. The endpoints below show the planned functionality.
+</Warning>
+
+## Overview
+
+The Reports API provides programmatic access to Pond3r's automated crypto intelligence reports. This API will allow you to:
+
+- Create automated analysis reports using natural language descriptions
+- List and discover available reports
+- Access historical report executions
+- Retrieve report content in both markdown and structured JSON formats
+
+All report generation is asynchronous - you'll receive a job ID immediately and can poll for completion.
+
+## Planned Endpoints
+
+### Create Report (Async)
+
+**`POST /v1/api/reports`** - Create a new automated report
+
+```javascript
+// Create a new report (returns job ID)
+const response = await axios.post('https://api.pond3r.xyz/v1/api/reports', {
+  description: 'Track new tokens on Uniswap with less than $500K market cap and rising liquidity',
+  schedule: 'daily',
+  delivery_format: 'structured_markdown'
+}, {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+const jobId = response.data.jobId;
+
+// Poll for completion
+const job = await axios.get(`https://api.pond3r.xyz/v1/api/jobs/${jobId}`, {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+if (job.data.status === 'completed') {
+  const reportId = job.data.result.reportId;
+}
+```
+
+### Discover Reports
+
+**`GET /v1/api/reports/discover`** - List available API-enabled reports
+
+```javascript
+const response = await axios.get('https://api.pond3r.xyz/v1/api/reports/discover?page=1&limit=10', {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+// Response:
+{
+  "reports": [
+    {
+      "id": "uuid",
+      "subject": "New Token Opportunities",
+      "frequency": "daily",
+      "datasetName": "uniswap_tokens"
+    }
+  ],
+  "total": 25,
+  "page": 1,
+  "limit": 10
+}
+```
+
+### List Report Executions
+
+**`GET /v1/api/reports/{reportId}/executions`** - Get execution history for a report
+
+```javascript
+const response = await axios.get('https://api.pond3r.xyz/v1/api/reports/uuid/executions?contentType=both', {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+// Response:
+{
+  "executions": [
+    {
+      "id": "execution-uuid",
+      "createdAt": "2024-03-24T09:00:00Z",
+      "status": "COMPLETED",
+      "hasMarkdown": true,
+      "hasJson": true
+    }
+  ],
+  "total": 30,
+  "page": 1,
+  "limit": 10
+}
+```
+
+### Get Markdown Content
+
+**`GET /v1/api/reports/executions/{executionId}/markdown`** - Retrieve markdown report content
+
+```javascript
+const response = await axios.get('https://api.pond3r.xyz/v1/api/reports/executions/uuid/markdown', {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+// Response:
+{
+  "executionId": "uuid",
+  "reportId": "report-uuid",
+  "createdAt": "2024-03-24T09:00:00Z",
+  "subject": "New Token Opportunities",
+  "markdownContent": "# Daily Token Analysis Report\n\n## Executive Summary...",
+  "metadata": {
+    "generatedAt": "2024-03-24T09:00:00Z",
+    "datasetName": "uniswap_tokens"
+  }
+}
+```
+
+### Get JSON Content
+
+**`GET /v1/api/reports/executions/{executionId}/json`** - Retrieve structured JSON report content
+
+```javascript
+const response = await axios.get('https://api.pond3r.xyz/v1/api/reports/executions/uuid/json', {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+// Response:
+{
+  "executionId": "uuid",
+  "reportId": "report-uuid", 
+  "createdAt": "2024-03-24T09:00:00Z",
+  "subject": "New Token Opportunities",
+  "jsonContent": {
+    "executiveSummary": {
+      "keyFindings": "3 new tokens identified with 50%+ liquidity growth",
+      "topOpportunity": "TOKEN_ABC showing 85% volume increase"
+    },
+    "opportunities": [
+      {
+        "token": "TOKEN_ABC",
+        "riskScore": 0.3,
+        "opportunitySize": "High",
+        "details": "Rising liquidity with institutional backing",
+        "marketCap": 450000,
+        "volumeChange": 0.85
+      }
+    ]
+  },
+  "metadata": {
+    "generatedAt": "2024-03-24T09:00:00Z",
+    "datasetName": "uniswap_tokens"
+  }
+}
+```
+
+## Async Job Pattern
+
+All report creation will follow this async pattern:
+
+1. **Submit Request** - Get immediate job ID
+2. **Poll Status** - Check job completion
+3. **Access Results** - Use report ID to access executions
+
+### Job Status Polling
+
+```javascript
+async function waitForJob(jobId, maxAttempts = 30) {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const response = await axios.get(`https://api.pond3r.xyz/v1/api/jobs/${jobId}`, {
+      headers: { 'x-api-key': 'YOUR_API_KEY' }
+    });
+    
+    const { status, result, error } = response.data;
+    
+    if (status === 'completed') {
+      return result;
+    } else if (status === 'failed') {
+      throw new Error(error);
+    }
+    
+    // Wait 10 seconds before next check
+    await new Promise(resolve => setTimeout(resolve, 10000));
+  }
+  
+  throw new Error('Job timeout');
+}
+```
+
+## Query Parameters
+
+### Pagination
+- `page` - Page number (default: 1)
+- `limit` - Items per page (default: 10, max: 100)
+
+### Content Filtering
+- `contentType` - Filter by content type: `markdown`, `json`, or `both`
+
+## Response Status Codes
+
+- `200` - Success
+- `201` - Created (for new reports)
+- `202` - Accepted (async job submitted)
+- `400` - Bad Request
+- `401` - Unauthorized
+- `404` - Not Found
+- `429` - Rate Limited
+- `500` - Internal Server Error
+
+## Authentication
+
+All endpoints require API key authentication via the `x-api-key` header:
+
+```javascript
+headers: {
+  'x-api-key': 'YOUR_API_KEY',
+  'Content-Type': 'application/json'
+}
+```
+
+## Rate Limits
+
+- Report creation: 10 requests per hour
+- Data access: 1000 requests per hour
+- Job polling: 100 requests per minute
+
+<Note>
+Want early access to the Reports API? Join our [Discord community](https://discord.gg/yK9eg5Sr7e) or contact us via [Twitter](https://twitter.com/pond3r) to get notified when it's available.
+</Note>
