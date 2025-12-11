@@ -3,53 +3,142 @@ title: 'Reports API'
 description: 'Manage and access automated crypto intelligence reports'
 ---
 
-<Warning>
-**🚧 Coming Soon**  
-The Reports API is currently in development and will be available soon. The endpoints below show the planned functionality.
-</Warning>
-
 ## Overview
 
-The Reports API provides programmatic access to Pond3r's automated crypto intelligence reports. This API will allow you to:
+The Reports API provides programmatic access to Pond3r's automated crypto intelligence reports. Use this API to:
 
-- Create automated analysis reports using natural language descriptions
+- Create scheduled reports using natural language prompts
 - List and discover available reports
 - Access historical report executions
 - Retrieve report content in both markdown and structured JSON formats
 
-All report generation is asynchronous - you'll receive a job ID immediately and can poll for completion.
+All API endpoints require authentication via API key in the `x-api-key` header.
 
-## Planned Endpoints
+## Endpoints
 
-### Create Report (Async)
+### Create Report
 
-**`POST /v1/api/reports`** - Create a new automated report
+**`POST /v1/api/reports`** - Create a new scheduled report
 
 ```javascript
-// Create a new report (returns job ID)
 const response = await axios.post('https://api.pond3r.xyz/v1/api/reports', {
-  description: 'Track new tokens on Uniswap with less than $500K market cap and rising liquidity',
-  schedule: 'daily',
-  delivery_format: 'structured_markdown'
+  prompt: 'Track new tokens on Uniswap with less than $500K market cap and rising liquidity',
+  datasetId: 'uuid-of-dataset',  // Required: ID from dataset catalog
+  scheduleFrequency: 'daily',     // Required: 'daily', 'weekly', 'monthly', or 'on_demand'
+  recipients: ['user@example.com'], // Required: Array of email addresses
+  deliveryApiRetention: true,     // Optional: Enable API access to executions (default: false)
+  emailEnabled: true,             // Optional: Send email notifications (default: true)
+  isPublic: false,                // Optional: Make report publicly accessible (default: false)
+  workflowType: 'SCHEDULED',      // Optional: 'SCHEDULED' or 'ON_DEMAND' (default: 'SCHEDULED')
+  deliverySubject: 'Daily Token Report' // Optional: Custom email subject
 }, {
   headers: { 'x-api-key': 'YOUR_API_KEY' }
 });
 
-const jobId = response.data.jobId;
+// Response:
+{
+  "id": "uuid",
+  "prompt": "Track new tokens on Uniswap with less than $500K market cap and rising liquidity",
+  "datasetId": "uuid-of-dataset",
+  "scheduleFrequency": "daily",
+  "deliveryApiRetention": true,
+  "emailEnabled": true,
+  "isPublic": false,
+  "active": true,
+  "status": "PENDING", // or "GENERATING", "COMPLETED", "FAILED"
+  "workflowType": "SCHEDULED",
+  "createdAt": "2024-03-24T09:00:00Z",
+  "updatedAt": "2024-03-24T09:00:00Z",
+  "recipients": [
+    {
+      "id": "recipient-uuid",
+      "email": "user@example.com"
+    }
+  ],
+  "dataset": {
+    "id": "uuid",
+    "name": "uniswap_tokens",
+    "subgraphId": "...",
+    "type": "...",
+    "isDataScience": false
+  }
+}
+```
 
-// Poll for completion
-const job = await axios.get(`https://api.pond3r.xyz/v1/api/jobs/${jobId}`, {
+### List User Reports
+
+**`GET /v1/api/reports`** - List all reports created by the authenticated user
+
+```javascript
+const response = await axios.get('https://api.pond3r.xyz/v1/api/reports?page=1&limit=10', {
   headers: { 'x-api-key': 'YOUR_API_KEY' }
 });
 
-if (job.data.status === 'completed') {
-  const reportId = job.data.result.reportId;
+// Response:
+{
+  "data": [
+    {
+      "id": "uuid",
+      "prompt": "...",
+      "datasetId": "uuid",
+      "scheduleFrequency": "daily",
+      "deliverySubject": "Daily Token Report",
+      "deliveryApiRetention": true,
+      "active": true,
+      "status": "COMPLETED",
+      "workflowType": "SCHEDULED",
+      "createdAt": "2024-03-24T09:00:00Z",
+      "recipients": [...]
+    }
+  ],
+  "total": 5,
+  "page": 1,
+  "limit": 10
+}
+```
+
+### Get Report Status
+
+**`GET /v1/api/reports/{reportId}/status`** - Get current processing status of a report
+
+```javascript
+const response = await axios.get('https://api.pond3r.xyz/v1/api/reports/uuid/status', {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+// Response:
+{
+  "status": "COMPLETED", // or "PENDING", "GENERATING", "FAILED"
+  "reportId": "uuid",
+  "lastExecutedAt": "2024-03-24T09:00:00Z"
+}
+```
+
+### Get Dataset Catalog
+
+**`GET /v1/api/reports/dataset-catalog`** - List available datasets for creating reports
+
+```javascript
+const response = await axios.get('https://api.pond3r.xyz/v1/api/reports/dataset-catalog', {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+// Response: Dataset catalog from the reports service
+{
+  "datasets": [
+    {
+      "id": "uuid",
+      "name": "uniswap_tokens",
+      "description": "Uniswap token data and metrics",
+      "availableFields": [...]
+    }
+  ]
 }
 ```
 
 ### Discover Reports
 
-**`GET /v1/api/reports/discover`** - List available API-enabled reports
+**`GET /v1/api/reports/discover`** - List available API-enabled reports (owned by you or public)
 
 ```javascript
 const response = await axios.get('https://api.pond3r.xyz/v1/api/reports/discover?page=1&limit=10', {
@@ -77,7 +166,7 @@ const response = await axios.get('https://api.pond3r.xyz/v1/api/reports/discover
 **`GET /v1/api/reports/{reportId}/executions`** - Get execution history for a report
 
 ```javascript
-const response = await axios.get('https://api.pond3r.xyz/v1/api/reports/uuid/executions?contentType=both', {
+const response = await axios.get('https://api.pond3r.xyz/v1/api/reports/uuid/executions?page=1&limit=10&contentType=both', {
   headers: { 'x-api-key': 'YOUR_API_KEY' }
 });
 
@@ -97,6 +186,11 @@ const response = await axios.get('https://api.pond3r.xyz/v1/api/reports/uuid/exe
   "limit": 10
 }
 ```
+
+**Query Parameters:**
+- `page` - Page number (default: 1)
+- `limit` - Items per page (default: 10)
+- `contentType` - Filter by content type: `markdown`, `json`, or `both` (default: `both`)
 
 ### Get Markdown Content
 
@@ -133,7 +227,7 @@ const response = await axios.get('https://api.pond3r.xyz/v1/api/reports/executio
 // Response:
 {
   "executionId": "uuid",
-  "reportId": "report-uuid", 
+  "reportId": "report-uuid",
   "createdAt": "2024-03-24T09:00:00Z",
   "subject": "New Token Opportunities",
   "jsonContent": {
@@ -159,58 +253,59 @@ const response = await axios.get('https://api.pond3r.xyz/v1/api/reports/executio
 }
 ```
 
-## Async Job Pattern
+## Workflow
 
-All report creation will follow this async pattern:
+The typical workflow for using the Reports API:
 
-1. **Submit Request** - Get immediate job ID
-2. **Poll Status** - Check job completion
-3. **Access Results** - Use report ID to access executions
+1. **Get Datasets** - Use `/dataset-catalog` to see available data sources
+2. **Create Report** - Submit a new report with your prompt and dataset
+3. **Check Status** - Monitor report generation via `/reports/{reportId}/status`
+4. **Discover Reports** - Use `/discover` to find API-enabled reports
+5. **Access Executions** - List historical runs with `/reports/{reportId}/executions`
+6. **Retrieve Content** - Get report data in markdown or JSON format
 
-### Job Status Polling
+### Example: Create and Access a Report
 
 ```javascript
-async function waitForJob(jobId, maxAttempts = 30) {
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const response = await axios.get(`https://api.pond3r.xyz/v1/api/jobs/${jobId}`, {
-      headers: { 'x-api-key': 'YOUR_API_KEY' }
-    });
-    
-    const { status, result, error } = response.data;
-    
-    if (status === 'completed') {
-      return result;
-    } else if (status === 'failed') {
-      throw new Error(error);
-    }
-    
-    // Wait 10 seconds before next check
-    await new Promise(resolve => setTimeout(resolve, 10000));
-  }
-  
-  throw new Error('Job timeout');
-}
+// 1. Get available datasets
+const datasets = await axios.get('https://api.pond3r.xyz/v1/api/reports/dataset-catalog', {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+const uniswapDatasetId = datasets.data.datasets.find(d => d.name === 'uniswap_tokens').id;
+
+// 2. Create a new report
+const report = await axios.post('https://api.pond3r.xyz/v1/api/reports', {
+  prompt: 'Analyze tokens with rising liquidity',
+  datasetId: uniswapDatasetId,
+  scheduleFrequency: 'daily',
+  recipients: ['analyst@company.com'],
+  deliveryApiRetention: true
+}, {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+const reportId = report.data.id;
+
+// 3. Check status
+const status = await axios.get(`https://api.pond3r.xyz/v1/api/reports/${reportId}/status`, {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+// 4. List executions (once report has run)
+const executions = await axios.get(`https://api.pond3r.xyz/v1/api/reports/${reportId}/executions`, {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+const latestExecutionId = executions.data.executions[0].id;
+
+// 5. Get the report content
+const markdown = await axios.get(`https://api.pond3r.xyz/v1/api/reports/executions/${latestExecutionId}/markdown`, {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+console.log(markdown.data.markdownContent);
 ```
-
-## Query Parameters
-
-### Pagination
-- `page` - Page number (default: 1)
-- `limit` - Items per page (default: 10, max: 100)
-
-### Content Filtering
-- `contentType` - Filter by content type: `markdown`, `json`, or `both`
-
-## Response Status Codes
-
-- `200` - Success
-- `201` - Created (for new reports)
-- `202` - Accepted (async job submitted)
-- `400` - Bad Request
-- `401` - Unauthorized
-- `404` - Not Found
-- `429` - Rate Limited
-- `500` - Internal Server Error
 
 ## Authentication
 
@@ -223,12 +318,31 @@ headers: {
 }
 ```
 
+## Response Status Codes
+
+- `200` - Success
+- `201` - Created (for new reports)
+- `204` - No Content (successful deletion)
+- `400` - Bad Request (invalid parameters)
+- `401` - Unauthorized (invalid or missing API key)
+- `404` - Not Found (report or execution doesn't exist)
+- `429` - Rate Limited
+- `500` - Internal Server Error
+
 ## Rate Limits
 
 - Report creation: 10 requests per hour
 - Data access: 1000 requests per hour
-- Job polling: 100 requests per minute
+
+## Access Control
+
+Reports have two access levels:
+
+- **Private** (default): Only accessible to the creator via their API key
+- **Public** (`isPublic: true`): Accessible to all authenticated users via the discover endpoint
+
+To enable API access to execution data, set `deliveryApiRetention: true` when creating the report.
 
 <Note>
-Want early access to the Reports API? Join our [Discord community](https://discord.gg/yK9eg5Sr7e) or contact us via [Twitter](https://twitter.com/pond3r) to get notified when it's available.
+Need help getting started? Join our [Discord community](https://discord.gg/yK9eg5Sr7e) or reach out via [Twitter](https://twitter.com/pond3r).
 </Note>
