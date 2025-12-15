@@ -24,13 +24,14 @@ All API endpoints require authentication via API key in the `x-api-key` header.
 const response = await axios.post('https://api.pond3r.xyz/v1/api/reports', {
   prompt: 'Track new tokens on Uniswap with less than $500K market cap and rising liquidity',
   datasetId: 'uuid-of-dataset',  // Required: ID from dataset catalog
-  scheduleFrequency: 'daily',     // Required: 'daily', 'weekly', 'monthly', or 'on_demand'
-  recipients: ['user@example.com'], // Required: Array of email addresses
+  scheduleFrequency: 'on_demand', // Required: 'daily', 'weekly', 'monthly', or 'on_demand' (default: 'on_demand')
+  recipients: ['user@example.com'], // Optional: Array of email addresses (can be omitted for API-only reports)
   deliveryApiRetention: true,     // Optional: Enable API access to executions (default: false)
   emailEnabled: true,             // Optional: Send email notifications (default: true)
   isPublic: false,                // Optional: Make report publicly accessible (default: false)
-  workflowType: 'SCHEDULED',      // Optional: 'SCHEDULED' or 'ON_DEMAND' (default: 'SCHEDULED')
-  deliverySubject: 'Daily Token Report' // Optional: Custom email subject
+  workflowType: 'ON_DEMAND',      // Optional: 'SCHEDULED' or 'ON_DEMAND' (default: 'ON_DEMAND')
+  deliverySubject: 'Daily Token Report', // Optional: Custom email subject
+  refId: 'my-system-ref-123'      // Optional: Your internal reference ID for this report
 }, {
   headers: { 'x-api-key': 'YOUR_API_KEY' }
 });
@@ -40,13 +41,14 @@ const response = await axios.post('https://api.pond3r.xyz/v1/api/reports', {
   "id": "uuid",
   "prompt": "Track new tokens on Uniswap with less than $500K market cap and rising liquidity",
   "datasetId": "uuid-of-dataset",
-  "scheduleFrequency": "daily",
+  "scheduleFrequency": "on_demand",
   "deliveryApiRetention": true,
   "emailEnabled": true,
   "isPublic": false,
   "active": true,
   "status": "PENDING", // or "GENERATING", "COMPLETED", "FAILED"
-  "workflowType": "SCHEDULED",
+  "workflowType": "ON_DEMAND",
+  "refId": "my-system-ref-123",
   "createdAt": "2024-03-24T09:00:00Z",
   "updatedAt": "2024-03-24T09:00:00Z",
   "recipients": [
@@ -63,6 +65,32 @@ const response = await axios.post('https://api.pond3r.xyz/v1/api/reports', {
     "isDataScience": false
   }
 }
+```
+
+**Schedule Frequencies:**
+- `on_demand` (default) - Report runs once immediately upon creation. Perfect for one-time analysis or API-only reports.
+- `daily` - Report runs automatically every day
+- `weekly` - Report runs automatically every week
+- `monthly` - Report runs automatically every month
+
+**API-Only Reports:**
+You can create reports without email recipients by omitting the `recipients` field and setting:
+- `emailEnabled: false` - Disable email delivery
+- `deliveryApiRetention: true` - Enable API access to report data
+- `refId: "your-reference"` - Use your own reference ID to easily find the report later
+
+```javascript
+// Example: Create an API-only report
+const apiOnlyReport = await axios.post('https://api.pond3r.xyz/v1/api/reports', {
+  prompt: 'Analyze DeFi trends',
+  datasetId: 'uuid-of-dataset',
+  scheduleFrequency: 'on_demand',
+  emailEnabled: false,
+  deliveryApiRetention: true,
+  refId: 'defi-analysis-2024'
+}, {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
 ```
 
 ### List User Reports
@@ -113,6 +141,79 @@ const response = await axios.get('https://api.pond3r.xyz/v1/api/reports/uuid/sta
   "lastExecutedAt": "2024-03-24T09:00:00Z"
 }
 ```
+
+### List Reports by Reference ID
+
+**`GET /v1/api/reports/by-ref/{refId}`** - List all reports with a specific reference ID
+
+Multiple reports can share the same `refId`. This endpoint returns all matching reports with pagination support.
+
+```javascript
+const response = await axios.get('https://api.pond3r.xyz/v1/api/reports/by-ref/user-123?page=1&limit=10', {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+// Response:
+{
+  "data": [
+    {
+      "id": "uuid-1",
+      "prompt": "Weekly analysis",
+      "datasetId": "uuid-of-dataset",
+      "scheduleFrequency": "weekly",
+      "refId": "user-123",
+      "deliveryApiRetention": true,
+      "active": true,
+      "status": "COMPLETED",
+      "createdAt": "2024-03-24T09:00:00Z",
+      "recipients": [...],
+      "dataset": {...}
+    },
+    {
+      "id": "uuid-2",
+      "prompt": "Daily opportunities",
+      "datasetId": "uuid-of-dataset",
+      "scheduleFrequency": "daily",
+      "refId": "user-123",
+      "deliveryApiRetention": true,
+      "active": true,
+      "status": "COMPLETED",
+      "createdAt": "2024-03-23T09:00:00Z",
+      "recipients": [...],
+      "dataset": {...}
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "limit": 10
+}
+```
+
+**Query Parameters:**
+- `page` - Page number (default: 1)
+- `limit` - Items per page (default: 10)
+
+**Access Control:** Only returns reports you created. Returns empty array if no reports found.
+
+### Delete Report
+
+**`DELETE /v1/api/reports/{reportId}`** - Delete a scheduled report
+
+```javascript
+const response = await axios.delete('https://api.pond3r.xyz/v1/api/reports/uuid', {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+// Response:
+{
+  "message": "Report successfully deleted"
+}
+```
+
+**Access Control:**
+- Only the report owner can delete a report
+- Returns 403 Forbidden if you don't own the report
+- Returns 404 Not Found if the report doesn't exist
 
 ### Get Dataset Catalog
 
@@ -274,13 +375,14 @@ const datasets = await axios.get('https://api.pond3r.xyz/v1/api/reports/dataset-
 
 const uniswapDatasetId = datasets.data.datasets.find(d => d.name === 'uniswap_tokens').id;
 
-// 2. Create a new report
+// 2. Create a new on-demand API-only report
 const report = await axios.post('https://api.pond3r.xyz/v1/api/reports', {
   prompt: 'Analyze tokens with rising liquidity',
   datasetId: uniswapDatasetId,
-  scheduleFrequency: 'daily',
-  recipients: ['analyst@company.com'],
-  deliveryApiRetention: true
+  scheduleFrequency: 'on_demand',  // Runs once immediately
+  emailEnabled: false,              // No email notifications
+  deliveryApiRetention: true,       // Enable API access
+  refId: 'liquidity-analysis-001'   // Custom reference ID
 }, {
   headers: { 'x-api-key': 'YOUR_API_KEY' }
 });
@@ -292,19 +394,31 @@ const status = await axios.get(`https://api.pond3r.xyz/v1/api/reports/${reportId
   headers: { 'x-api-key': 'YOUR_API_KEY' }
 });
 
-// 4. List executions (once report has run)
+// 4. List reports by reference ID (alternative to using reportId)
+const reportsByRef = await axios.get('https://api.pond3r.xyz/v1/api/reports/by-ref/liquidity-analysis-001', {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+const firstReport = reportsByRef.data.data[0]; // Get the first matching report
+
+// 5. List executions (once report has run)
 const executions = await axios.get(`https://api.pond3r.xyz/v1/api/reports/${reportId}/executions`, {
   headers: { 'x-api-key': 'YOUR_API_KEY' }
 });
 
 const latestExecutionId = executions.data.executions[0].id;
 
-// 5. Get the report content
-const markdown = await axios.get(`https://api.pond3r.xyz/v1/api/reports/executions/${latestExecutionId}/markdown`, {
+// 6. Get the report content in JSON format
+const jsonContent = await axios.get(`https://api.pond3r.xyz/v1/api/reports/executions/${latestExecutionId}/json`, {
   headers: { 'x-api-key': 'YOUR_API_KEY' }
 });
 
-console.log(markdown.data.markdownContent);
+console.log(jsonContent.data.jsonContent);
+
+// 7. Delete the report when done
+await axios.delete(`https://api.pond3r.xyz/v1/api/reports/${reportId}`, {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
 ```
 
 ## Authentication
@@ -322,9 +436,9 @@ headers: {
 
 - `200` - Success
 - `201` - Created (for new reports)
-- `204` - No Content (successful deletion)
 - `400` - Bad Request (invalid parameters)
 - `401` - Unauthorized (invalid or missing API key)
+- `403` - Forbidden (insufficient permissions)
 - `404` - Not Found (report or execution doesn't exist)
 - `429` - Rate Limited
 - `500` - Internal Server Error
