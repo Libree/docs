@@ -1,0 +1,118 @@
+---
+title: 'MCP Server'
+description: 'Connect your AI agent directly to Pond3r datasets using the Model Context Protocol'
+---
+
+## Overview
+
+Pond3r provides a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that lets AI agents query curated crypto datasets directly. The server uses **SSE transport**, so it works with Claude Desktop, Cursor, and any MCP-compatible client.
+
+## Getting Your API Key
+
+<Steps>
+  <Step title="Create an account">
+    Sign up at [pond3r.xyz](https://pond3r.xyz) if you haven't already.
+  </Step>
+  <Step title="Generate an API key">
+    Go to [makeit.pond3r.xyz/api-keys](https://makeit.pond3r.xyz/api-keys) and generate a new key.
+
+    <Warning>
+      Keep your API key secure. Never expose it in client-side code or public repositories.
+    </Warning>
+  </Step>
+</Steps>
+
+## Setup with Claude Desktop
+
+Add the following to your Claude Desktop MCP configuration file (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "pond3r": {
+      "url": "https://mcp.pond3r.xyz/sse",
+      "headers": {
+        "Authorization": "Bearer your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+Restart Claude Desktop and the Pond3r tools will be available in your conversations.
+
+## Setup with Cursor
+
+In Cursor, go to **Settings** > **MCP Servers** and add a new server:
+
+- **Type**: `SSE`
+- **URL**: `https://mcp.pond3r.xyz/sse`
+- **Headers**: `Authorization: Bearer your_api_key_here`
+
+## Setup with Other Clients
+
+For any MCP-compatible client that supports SSE transport, connect to:
+
+```
+https://mcp.pond3r.xyz/sse
+```
+
+Pass your API key as a Bearer token in the `Authorization` header:
+
+```
+Authorization: Bearer your_api_key_here
+```
+
+## Available Tools
+
+Once connected, your AI agent has access to three tools:
+
+| Tool | Description |
+|------|-------------|
+| `list_datasets` | List all available datasets and their tables |
+| `get_schema` | Get column names, types, and descriptions for a dataset |
+| `query` | Execute a read-only SQL query against a dataset |
+
+The agent will automatically discover schemas and available data — you just need to ask your question in natural language.
+
+### Query Tool
+
+The `query` tool executes read-only SQL against Pond3r datasets. A few things to note:
+
+- **SELECT only** — write operations are not allowed.
+- **Use bare table names** — e.g. `SELECT * FROM stablecoin_yields`, not fully qualified paths.
+- **Results are capped at 10,000 rows** — use `LIMIT` or `WHERE` filters for large datasets.
+- **Cost is estimated before execution** — queries that exceed your tier limits are rejected before running.
+
+
+## Example Conversation
+
+Once the MCP server is connected, you can ask your AI agent questions like:
+
+```
+What are the top 5 stablecoin yields on Ethereum right now?
+```
+
+```
+Show me Polymarket trades from the last 24 hours with the highest volume.
+```
+
+```
+Compare USDC yields across Aave and Compound on Arbitrum.
+```
+
+The agent will use the `list_datasets` and `get_schema` tools to understand what's available, then write and execute SQL via the `query` tool.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Connection refused or timeout">
+    Make sure your API key is valid and correctly set. Check that your client supports SSE transport and is sending the `Authorization` header.
+  </Accordion>
+  <Accordion title="Query rejected: use simple table names">
+    The server requires bare table names (e.g. `stablecoin_yields`). Do not include project or dataset prefixes in your SQL.
+  </Accordion>
+  <Accordion title="Usage limit exceeded">
+    You've hit your daily or monthly spend cap. Wait for the limit to reset or upgrade your plan for higher limits.
+  </Accordion>
+</AccordionGroup>
