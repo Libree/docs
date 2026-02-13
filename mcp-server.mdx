@@ -28,7 +28,7 @@ Run this command in your terminal to add the Pond3r MCP server:
 
 ```bash
 claude mcp add pond3r-data \
-  --transport streamable-http \
+  --transport http \
   https://mcp.pond3r.xyz/mcp \
   --header "Authorization: Bearer your_api_key_here"
 ```
@@ -43,7 +43,7 @@ Add the following to your Claude Desktop MCP configuration file (`claude_desktop
 {
   "mcpServers": {
     "pond3r": {
-      "type": "streamable-http",
+      "type": "http",
       "url": "https://mcp.pond3r.xyz/mcp",
       "headers": {
         "Authorization": "Bearer your_api_key_here"
