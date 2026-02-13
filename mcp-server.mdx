@@ -5,7 +5,7 @@ description: 'Connect your AI agent directly to Pond3r datasets using the Model 
 
 ## Overview
 
-Pond3r provides a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that lets AI agents query curated crypto datasets directly. The server uses **SSE transport**, so it works with Claude Desktop, Cursor, and any MCP-compatible client.
+Pond3r provides a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that lets AI agents query curated crypto datasets directly. The server uses **Streamable HTTP transport**, so it works with Claude Desktop, Claude Code, Cursor, and any MCP-compatible client.
 
 ## Getting Your API Key
 
@@ -22,6 +22,19 @@ Pond3r provides a [Model Context Protocol (MCP)](https://modelcontextprotocol.io
   </Step>
 </Steps>
 
+## Setup with Claude Code
+
+Run this command in your terminal to add the Pond3r MCP server:
+
+```bash
+claude mcp add pond3r-data \
+  --transport streamable-http \
+  https://mcp.pond3r.xyz/mcp \
+  --header "Authorization: Bearer your_api_key_here"
+```
+
+The tools will be available immediately in your Claude Code session.
+
 ## Setup with Claude Desktop
 
 Add the following to your Claude Desktop MCP configuration file (`claude_desktop_config.json`):
@@ -30,7 +43,8 @@ Add the following to your Claude Desktop MCP configuration file (`claude_desktop
 {
   "mcpServers": {
     "pond3r": {
-      "url": "https://mcp.pond3r.xyz/sse",
+      "type": "streamable-http",
+      "url": "https://mcp.pond3r.xyz/mcp",
       "headers": {
         "Authorization": "Bearer your_api_key_here"
       }
@@ -45,16 +59,15 @@ Restart Claude Desktop and the Pond3r tools will be available in your conversati
 
 In Cursor, go to **Settings** > **MCP Servers** and add a new server:
 
-- **Type**: `SSE`
-- **URL**: `https://mcp.pond3r.xyz/sse`
+- **URL**: `https://mcp.pond3r.xyz/mcp`
 - **Headers**: `Authorization: Bearer your_api_key_here`
 
 ## Setup with Other Clients
 
-For any MCP-compatible client that supports SSE transport, connect to:
+For any MCP-compatible client that supports Streamable HTTP transport, send POST requests to:
 
 ```
-https://mcp.pond3r.xyz/sse
+https://mcp.pond3r.xyz/mcp
 ```
 
 Pass your API key as a Bearer token in the `Authorization` header:
@@ -107,7 +120,7 @@ The agent will use the `list_datasets` and `get_schema` tools to understand what
 
 <AccordionGroup>
   <Accordion title="Connection refused or timeout">
-    Make sure your API key is valid and correctly set. Check that your client supports SSE transport and is sending the `Authorization` header.
+    Make sure your API key is valid and correctly set. Check that your client is sending the `Authorization` header with every request.
   </Accordion>
   <Accordion title="Query rejected: use simple table names">
     The server requires bare table names (e.g. `stablecoin_yields`). Do not include project or dataset prefixes in your SQL.
