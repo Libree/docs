@@ -98,20 +98,146 @@ The `query` tool executes read-only SQL against Pond3r datasets. A few things to
 - **Cost is estimated before execution** — queries that exceed your tier limits are rejected before running.
 
 
-## Example Conversation
+## Available Datasets
+
+The MCP server provides access to the following curated datasets:
+
+### Prediction Markets
+
+<AccordionGroup>
+  <Accordion title="polymarket — Polymarket markets and tokens">
+    Periodic snapshots of Polymarket prediction markets with prices, volume, liquidity, and resolution status. Includes a pre-computed view linking markets to CLOB token IDs for crypto up/down markets.
+
+    **Tables**: `polymarket_trades`, `polymarket_resolutions`, `polymarket_markets`, `polymarket_market_tokens`
+
+    **Best for**: Market analysis, resolution tracking, crypto derivatives research
+  </Accordion>
+
+  <Accordion title="crypto_trades — Crypto market trades">
+    Enriched Polymarket crypto 5m/15m market trades with pre-computed price, size, side, and market timing. Filtered to BTC, ETH, SOL, XRP up/down markets only.
+
+    **Tables**: `crypto_trades`
+
+    **Best for**: Trade flow analysis, price discovery, market microstructure
+  </Accordion>
+
+  <Accordion title="crypto_market_resolutions — Resolved crypto markets">
+    One row per resolved crypto 5m/15m market with outcome and metadata. Includes volume, liquidity, and resolution timestamps.
+
+    **Tables**: `crypto_market_resolutions`
+
+    **Best for**: Backtesting strategies, outcome prediction, market efficiency analysis
+  </Accordion>
+
+  <Accordion title="market_summary — Per-market aggregated stats">
+    One row per crypto 5m/15m market with aggregated trade stats, price stats, resolution outcome, and orderbook stats. Primary view for strategy backtests.
+
+    **Tables**: `market_summary`
+
+    **Best for**: Strategy development, market behavior analysis, performance research
+  </Accordion>
+
+  <Accordion title="orderbook_features — Orderbook time-series">
+    Enriched orderbook snapshots with time-series features (changes between consecutive snapshots). Built with LAG window functions for detecting liquidity changes.
+
+    **Tables**: `orderbook_features`
+
+    **Best for**: Liquidity analysis, market making research, microstructure studies
+  </Accordion>
+
+  <Accordion title="cross_timeframe_signals — 5m→15m predictions">
+    For each resolved 15-minute market, counts how many overlapping 5-minute markets resolved up vs down, and whether this predicted the 15-minute outcome.
+
+    **Tables**: `cross_timeframe_signals`
+
+    **Best for**: Multi-timeframe analysis, signal generation, predictive modeling
+  </Accordion>
+
+  <Accordion title="streak_features — Sequential patterns">
+    Sequential market patterns tracking consecutive same-outcome streaks and whether they break. Useful for mean-reversion studies.
+
+    **Tables**: `streak_features`
+
+    **Best for**: Pattern recognition, momentum/reversion analysis, sequence modeling
+  </Accordion>
+</AccordionGroup>
+
+### DeFi Yields & Lending
+
+<AccordionGroup>
+  <Accordion title="stablecoin_yields — Curated stablecoin yields">
+    Hourly snapshots of stablecoin DeFi yields across lending protocols. TIME-SERIES TABLE with multiple snapshot rows per pool — always use deduplication.
+
+    **Tables**: `stablecoin_yields`
+
+    **Best for**: Yield farming, protocol comparison, APY optimization
+
+    <Warning>
+      This is a time-series table. Always use `QUALIFY ROW_NUMBER() OVER (PARTITION BY blockchain, protocol_name, token_symbol ORDER BY data_collection_timestamp DESC) = 1` to get the latest snapshot per pool.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="yield_pool_features — Pool yields with rolling stats">
+    Daily aggregated pool yields enriched with 7d/30d rolling stats, momentum indicators, spike detection, and rankings. Built from yield_pool_daily.
+
+    **Tables**: `yield_pool_features`
+
+    **Best for**: Trend analysis, risk-adjusted returns, yield stability assessment
+  </Accordion>
+
+  <Accordion title="morpho_market_features — Morpho market analysis">
+    Daily Morpho individual market data enriched with rolling stats, utilization trends, and rankings. Includes supply APY, utilization, and flow metrics.
+
+    **Tables**: `morpho_market_features`
+
+    **Best for**: Morpho-specific strategies, capital efficiency research, utilization analysis
+  </Accordion>
+
+  <Accordion title="morpho_vault_features — Morpho vault performance">
+    Daily Morpho vault data enriched with APY features, actual share price returns, and rankings. Tracks net APY after fees and cumulative returns.
+
+    **Tables**: `morpho_vault_features`
+
+    **Best for**: Vault comparison, return tracking, fee impact analysis
+  </Accordion>
+
+  <Accordion title="aave_rate_features — Aave cross-chain rates">
+    Daily Aave rates enriched with rolling stats and cross-chain ranking. Identifies best chains per token and arbitrage opportunities.
+
+    **Tables**: `aave_rate_features`
+
+    **Best for**: Cross-chain optimization, rate comparison, chain selection
+  </Accordion>
+</AccordionGroup>
+
+## Example Conversations
 
 Once the MCP server is connected, you can ask your AI agent questions like:
 
+### Prediction Markets
+```
+What's the win rate for BTC 5-minute up markets in the last week?
+```
+
+```
+Show me the top 10 most active Polymarket traders by volume.
+```
+
+```
+Find 15-minute markets where all three 5-minute sub-markets agreed on direction.
+```
+
+### DeFi Yields
 ```
 What are the top 5 stablecoin yields on Ethereum right now?
 ```
 
 ```
-Show me Polymarket trades from the last 24 hours with the highest volume.
+Compare USDC yields across Aave, Morpho, and other protocols on Arbitrum.
 ```
 
 ```
-Compare USDC yields across Aave and Compound on Arbitrum.
+Show me pools with APY > 10% and low volatility (cv_30d < 0.3).
 ```
 
 The agent will use the `list_datasets` and `get_schema` tools to understand what's available, then write and execute SQL via the `query` tool.
