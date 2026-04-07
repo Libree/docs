@@ -1,0 +1,213 @@
+---
+title: 'Query API'
+description: 'Run SQL queries against Pond3r datasets with API key auth, cost tracking, and usage limits'
+---
+
+## Overview
+
+The Query API provides direct SQL access to Pond3r datasets over standard HTTPS. It exposes the same core query flow as the MCP server, including:
+
+- Dataset discovery
+- Schema inspection
+- SQL safety validation
+- Query cost estimation
+- Tier-based usage enforcement
+- Usage and spend tracking per API key
+
+All endpoints require authentication via API key in the `x-api-key` header.
+
+## Endpoints
+
+### List Datasets
+
+**`GET /v1/api/query/datasets`** - List all available datasets and their tables
+
+```javascript
+const response = await axios.get('https://api.pond3r.xyz/v1/api/query/datasets', {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+// Response:
+{
+  "note": "All tables across all datasets are in the same database. You can JOIN or UNION any tables together in a single query.",
+  "datasets": [
+    {
+      "id": "stablecoin_yields",
+      "description": "Curated stablecoin DeFi yields...",
+      "tables": ["stablecoin_yields"]
+    },
+    {
+      "id": "polymarket",
+      "description": "Polymarket prediction market data...",
+      "tables": [
+        "polymarket_trades",
+        "polymarket_resolutions",
+        "polymarket_markets",
+        "polymarket_market_tokens"
+      ]
+    }
+  ]
+}
+```
+
+### Get Dataset Schema
+
+**`GET /v1/api/query/schema/{datasetId}`** - Retrieve the tables and columns for a dataset
+
+```javascript
+const response = await axios.get(
+  'https://api.pond3r.xyz/v1/api/query/schema/stablecoin_yields',
+  { headers: { 'x-api-key': 'YOUR_API_KEY' } }
+);
+
+// Response:
+{
+  "dataset_id": "stablecoin_yields",
+  "tables": {
+    "stablecoin_yields": {
+      "description": "Append-only time-series snapshots of stablecoin DeFi yields...",
+      "columns": [
+        { "name": "blockchain", "type": "STRING", "description": "Chain name" },
+        { "name": "protocol_name", "type": "STRING", "description": "DeFi protocol" },
+        { "name": "token_symbol", "type": "STRING", "description": "Stablecoin token symbol" },
+        { "name": "total_apy_percent", "type": "FLOAT64", "description": "Combined APY" }
+      ]
+    }
+  }
+}
+```
+
+### Execute Query
+
+**`POST /v1/api/query`** - Run a SELECT query with cost tracking and usage enforcement
+
+```javascript
+const response = await axios.post(
+  'https://api.pond3r.xyz/v1/api/query',
+  {
+    dataset_id: 'stablecoin_yields',
+    sql: `
+      SELECT blockchain, protocol_name, token_symbol, total_apy_percent
+      FROM stablecoin_yields
+      QUALIFY ROW_NUMBER() OVER (
+        PARTITION BY blockchain, protocol_name, token_symbol
+        ORDER BY data_collection_timestamp DESC
+      ) = 1
+      LIMIT 10
+    `
+  },
+  {
+    headers: { 'x-api-key': 'YOUR_API_KEY' }
+  }
+);
+
+// Response:
+{
+  "success": true,
+  "row_count": 2,
+  "rows": [
+    {
+      "blockchain": "Acala",
+      "protocol_name": "taiga-acala",
+      "token_symbol": "TDOT",
+      "total_apy_percent": 8.60925
+    },
+    {
+      "blockchain": "Arbitrum",
+      "protocol_name": "prime-protocol",
+      "token_symbol": "USDC",
+      "total_apy_percent": 0.20014
+    }
+  ],
+  "usage": {
+    "query_cost_credits": 0.035957326729999996,
+    "daily_spent_credits": 0.07191432673,
+    "daily_limit_credits": 5,
+    "monthly_spent_credits": 0.07191432673,
+    "monthly_limit_credits": 20,
+    "tier": "free"
+  }
+}
+```
+
+**Request Body:**
+- `dataset_id` - Primary dataset used for schema lookup and usage attribution
+- `sql` - SQL query to execute. Must be `SELECT` only.
+
+**Important Query Rules:**
+- Only `SELECT` queries are allowed
+- Use bare table names like `stablecoin_yields`, not full BigQuery paths
+- Do not reference internal project or dataset identifiers such as `farcaster-433216` or `darex`
+- Cross-dataset `JOIN` and `UNION` queries are supported as long as all referenced tables are in the shared Pond3r dataset
+
+**Error Cases:**
+- `400` for invalid dataset IDs, invalid SQL, blocked queries, or query execution errors
+- `403` if the estimated query cost exceeds your plan limits
+
+### Get Usage Summary
+
+**`GET /v1/api/query/usage`** - Retrieve daily, monthly, and lifetime usage for the authenticated API key
+
+```javascript
+const response = await axios.get('https://api.pond3r.xyz/v1/api/query/usage', {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+// Response:
+{
+  "api_key_id": "82cf30b5-37a5-4a20-b9be-0677aa0e5f72",
+  "tier": "free",
+  "credits_used_total": 198,
+  "cost_usd_total": 11.945476,
+  "daily_spent_credits": 0.035957,
+  "daily_limit_credits": 5,
+  "daily_remaining_credits": 4.964043,
+  "monthly_spent_credits": 0.035957,
+  "monthly_limit_credits": 20,
+  "monthly_remaining_credits": 19.964043,
+  "max_query_cost_credits": 0.5
+}
+```
+
+## Typical Workflow
+
+The typical Query API workflow is:
+
+1. Call `GET /v1/api/query/datasets` to see available datasets.
+2. Call `GET /v1/api/query/schema/{datasetId}` to inspect tables and columns.
+3. Build a targeted `SELECT` query.
+4. Call `POST /v1/api/query` to execute it.
+5. Call `GET /v1/api/query/usage` to inspect usage and remaining budget.
+
+```javascript
+const headers = { 'x-api-key': 'YOUR_API_KEY' };
+
+const datasets = await axios.get('https://api.pond3r.xyz/v1/api/query/datasets', { headers });
+const schema = await axios.get('https://api.pond3r.xyz/v1/api/query/schema/stablecoin_yields', { headers });
+
+const query = await axios.post(
+  'https://api.pond3r.xyz/v1/api/query',
+  {
+    dataset_id: 'stablecoin_yields',
+    sql: 'SELECT blockchain, protocol_name, token_symbol, total_apy_percent FROM stablecoin_yields QUALIFY ROW_NUMBER() OVER (PARTITION BY blockchain, protocol_name, token_symbol ORDER BY data_collection_timestamp DESC) = 1 LIMIT 5'
+  },
+  { headers }
+);
+
+const usage = await axios.get('https://api.pond3r.xyz/v1/api/query/usage', { headers });
+```
+
+## Authentication
+
+All Query API endpoints require API key authentication via the `x-api-key` header:
+
+```javascript
+headers: {
+  'x-api-key': 'YOUR_API_KEY',
+  'Content-Type': 'application/json'
+}
+```
+
+## MCP vs REST
+
+If you are integrating from an AI agent that supports MCP, you can also use the Pond3r MCP server. If you want standard HTTPS request/response behavior, use the Query API endpoints documented above.

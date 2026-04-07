@@ -40,7 +40,8 @@
           {
             "group": "Endpoint Examples",
             "pages": [
-              "api-reference/endpoint/reports"
+              "api-reference/endpoint/reports",
+              "api-reference/endpoint/query"
             ]
           }
         ]
